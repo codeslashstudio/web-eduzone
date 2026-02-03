@@ -503,7 +503,7 @@
                     <!-- Info Credentials -->
                     <div class="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 rounded-2xl p-8 text-white">
                         <div class="grid md:grid-cols-2 gap-6">
-                            <div>
+                            <!-- <div class="items-center">
                                 <h5 class="font-bold text-lg mb-3 flex items-center">
                                     <i class="fas fa-key mr-2"></i>
                                     Demo Credentials
@@ -518,7 +518,7 @@
                                         <span class="font-mono bg-white/20 px-3 py-1.5 rounded-lg">belajar123</span>
                                     </p>
                                 </div>
-                            </div>
+                            </div> -->
                             <div>
                                 <h5 class="font-bold text-lg mb-3 flex items-center">
                                     <i class="fas fa-users mr-2"></i>

@@ -35,6 +35,16 @@ class KeuanganModel extends Model
 
     public function insertPemasukan($data)
     {
+        // Pastikan field user_id ada, jika tidak set default 1
+        if (!isset($data['user_id'])) {
+            $data['user_id'] = 1;
+        }
+
+        // Pastikan field created_by ada, jika tidak set default 1
+        if (!isset($data['created_by'])) {
+            $data['created_by'] = 1;
+        }
+
         return $this->db->table('transaksi_pemasukan')->insert($data);
     }
 
@@ -98,6 +108,16 @@ class KeuanganModel extends Model
 
     public function insertPengeluaran($data)
     {
+        // Pastikan field user_id ada, jika tidak set default 1
+        if (!isset($data['user_id'])) {
+            $data['user_id'] = 1;
+        }
+
+        // Pastikan field created_by ada, jika tidak set default 1
+        if (!isset($data['created_by'])) {
+            $data['created_by'] = 1;
+        }
+
         return $this->db->table('transaksi_pengeluaran')->insert($data);
     }
 

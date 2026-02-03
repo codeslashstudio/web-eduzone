@@ -11,7 +11,7 @@
     <style>
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        }
+        } 
 
         .gradient-bg {
             background: linear-gradient(135deg, #667eea 0%, #4c6ef5 50%, #3b5bdb 100%);

@@ -206,7 +206,9 @@
                         </div>
                     </div>
                     <h3 class="text-3xl font-bold mb-1">
-                        <?= count(array_filter($guru, function($g) { return $g['status_kepegawaian'] === 'PNS'; })) ?>
+                        <?= count(array_filter($guru, function ($g) {
+                            return $g['status_kepegawaian'] === 'PNS';
+                        })) ?>
                     </h3>
                     <p class="text-blue-100 text-sm font-medium">Guru PNS</p>
                 </div>
@@ -218,7 +220,9 @@
                         </div>
                     </div>
                     <h3 class="text-3xl font-bold mb-1">
-                        <?= count(array_filter($guru, function($g) { return $g['status_kepegawaian'] === 'PPPK'; })) ?>
+                        <?= count(array_filter($guru, function ($g) {
+                            return $g['status_kepegawaian'] === 'PPPK';
+                        })) ?>
                     </h3>
                     <p class="text-green-100 text-sm font-medium">Guru PPPK</p>
                 </div>
@@ -230,7 +234,9 @@
                         </div>
                     </div>
                     <h3 class="text-3xl font-bold mb-1">
-                        <?= count(array_filter($guru, function($g) { return $g['status_kepegawaian'] === 'Honorer'; })) ?>
+                        <?= count(array_filter($guru, function ($g) {
+                            return $g['status_kepegawaian'] === 'Honorer';
+                        })) ?>
                     </h3>
                     <p class="text-orange-100 text-sm font-medium">Guru Honorer</p>
                 </div>
@@ -248,7 +254,7 @@
                         <div class="flex items-center space-x-3">
                             <!-- Search -->
                             <div class="relative">
-                                <input type="text" id="searchInput" placeholder="Cari guru..." 
+                                <input type="text" id="searchInput" placeholder="Cari guru..."
                                     class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
                                 <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
                             </div>
@@ -275,7 +281,7 @@
                                 <th class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Jabatan</th>
                                 <th class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Status</th>
                                 <th class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Kontak</th>
-                                <th class="px-6 py-4 text-center text-xs font-bold text-gray-700 uppercase tracking-wider">Aksi</th>
+                                <!-- <th class="px-6 py-4 text-center text-xs font-bold text-gray-700 uppercase tracking-wider">Aksi</th> -->
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200" id="tableBody">
@@ -288,14 +294,18 @@
                                 </tr>
                             <?php else: ?>
                                 <?php foreach ($guru as $index => $g): ?>
-                                    <tr class="hover:bg-gray-50 transition-colors">
+                                    <tr
+                                        class="hover:bg-blue-50 transition-colors cursor-pointer"
+                                        data-url="<?= base_url('kepsek/guru/detail/' . $g['idguru']) ?>">
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"><?= $index + 1 ?></td>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <?php if (!empty($g['foto'])): ?>
-                                                <img src="<?= base_url('uploads/guru/' . $g['foto']) ?>" alt="Foto" 
-                                                    class="w-12 h-12 rounded-full object-cover border-2 border-purple-200">
+                                                <img
+                                                    src="<?= base_url('uploads/guru/' . $g['foto']) ?>"
+                                                    alt="<?= esc($g['nama']) ?>"
+                                                    class="w-10 h-10 rounded-full object-cover">    
                                             <?php else: ?>
-                                                <div class="w-12 h-12 bg-gradient-to-br from-purple-400 to-blue-400 rounded-full flex items-center justify-center text-white font-bold text-lg">
+                                                <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 font-semibold text-sm">
                                                     <?= strtoupper(substr($g['nama'], 0, 1)) ?>
                                                 </div>
                                             <?php endif; ?>
@@ -336,14 +346,14 @@
                                                 <span><?= esc($g['no_hp']) ?></span>
                                             </div>
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-center">
+                                        <!-- <td class="px-6 py-4 whitespace-nowrap text-center">
                                             <div class="flex items-center justify-center space-x-2">
-                                                <a href="<?= base_url('kepsek/guru/detail/' . $g['idguru']) ?>" 
-                                                    class="p-2 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition-all" 
+                                                <a href="<?= base_url('kepsek/guru/detail/' . $g['idguru']) ?>"
+                                                    class="p-2 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition-all"
                                                     title="Detail">
                                                     <i class="fas fa-eye"></i>
                                                 </a>
-                                                <!-- <a href="<?= base_url('kepsek/guru/edit/' . $g['idguru']) ?>" 
+                                                <a href="<?= base_url('kepsek/guru/edit/' . $g['idguru']) ?>" 
                                                     class="p-2 bg-yellow-100 text-yellow-600 rounded-lg hover:bg-yellow-200 transition-all" 
                                                     title="Edit">
                                                     <i class="fas fa-edit"></i>
@@ -352,9 +362,9 @@
                                                     class="p-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-all" 
                                                     title="Hapus">
                                                     <i class="fas fa-trash"></i>
-                                                </button> -->
+                                                </button>
                                             </div>
-                                        </td>
+                                        </td> -->
                                     </tr>
                                 <?php endforeach; ?>
                             <?php endif; ?>
@@ -450,6 +460,12 @@
                 window.location.href = `<?= base_url('kepsek/guru/delete/') ?>${id}`;
             }
         }
+
+        document.querySelectorAll('tbody tr[data-url]').forEach(row => {
+            row.addEventListener('click', () => {
+                window.location.href = row.dataset.url;
+            });
+        });
     </script>
 </body>
 

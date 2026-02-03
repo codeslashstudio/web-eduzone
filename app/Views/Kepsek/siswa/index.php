@@ -269,7 +269,6 @@
                                 <th class="px-6 py-4 text-left text-sm font-bold uppercase">Jurusan</th>
                                 <th class="px-6 py-4 text-left text-sm font-bold uppercase">Agama</th>
                                 <th class="px-6 py-4 text-left text-sm font-bold uppercase">Tanggal Lahir</th>
-                                <th class="px-6 py-4 text-center text-sm font-bold uppercase">Aksi</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200">
@@ -283,13 +282,18 @@
                                 </tr>
                             <?php else: ?>
                                 <?php foreach ($siswa as $index => $s): ?>
-                                    <tr class="hover:bg-gray-50 transition-colors">
+                                    <tr
+                                        class="hover:bg-blue-50 transition cursor-pointer"
+                                        data-url="<?= base_url('kepsek/siswa/detail/' . $s['idsiswa']) ?>">
                                         <td class="px-6 py-4 text-sm text-gray-900"><?= $index + 1 ?></td>
                                         <td class="px-6 py-4">
                                             <?php if ($s['foto']): ?>
-                                                <img src="<?= base_url('uploads/siswa/' . $s['foto']) ?>" alt="Foto <?= esc($s['nama']) ?>" class="w-12 h-12 rounded-full object-cover border-2 border-blue-500">
+                                                <img
+                                                    src="<?= base_url('uploads/siswa/' . $s['foto']) ?>"
+                                                    alt="<?= esc($s['nama']) ?>"
+                                                    class="w-10 h-10 rounded-full object-cover">
                                             <?php else: ?>
-                                                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold">
+                                                <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 font-semibold text-sm">
                                                     <?= strtoupper(substr($s['nama'], 0, 1)) ?>
                                                 </div>
                                             <?php endif; ?>
@@ -305,19 +309,19 @@
                                         </td>
                                         <td class="px-6 py-4 text-sm text-gray-900"><?= esc($s['agama']) ?></td>
                                         <td class="px-6 py-4 text-sm text-gray-900"><?= date('d/m/Y', strtotime($s['tanggal_lahir'])) ?></td>
-                                        <td class="px-6 py-4 text-center">
+                                        <!-- <td class="px-6 py-4 text-center">
                                             <div class="flex items-center justify-center space-x-2">
                                                 <a href="<?= base_url('kepsek/siswa/detail/' . $s['idsiswa']) ?>" class="p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all transform hover:scale-110" title="Detail">
                                                     <i class="fas fa-eye"></i>
                                                 </a>
-                                                <!-- <a href="<?= base_url('kepsek/siswa/edit/' . $s['idsiswa']) ?>" class="p-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-all transform hover:scale-110" title="Edit">
+                                                <a href="<?= base_url('kepsek/siswa/edit/' . $s['idsiswa']) ?>" class="p-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-all transform hover:scale-110" title="Edit">
                                                     <i class="fas fa-edit"></i>
                                                 </a>
                                                 <button onclick="confirmDelete(<?= $s['idsiswa'] ?>, '<?= esc($s['nama']) ?>')" class="p-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all transform hover:scale-110" title="Hapus">
                                                     <i class="fas fa-trash"></i>
-                                                </button> -->
+                                                </button>
                                             </div>
-                                        </td>
+                                        </td> -->
                                     </tr>
                                 <?php endforeach; ?>
                             <?php endif; ?>
@@ -444,6 +448,12 @@
 
         updateDateTime();
         setInterval(updateDateTime, 1000);
+
+        document.querySelectorAll('#siswaTable tbody tr[data-url]').forEach(row => {
+            row.addEventListener('click', () => {
+                window.location.href = row.dataset.url;
+            });
+        });
     </script>
 </body>
 

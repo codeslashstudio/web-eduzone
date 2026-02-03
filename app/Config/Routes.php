@@ -140,6 +140,7 @@ $routes->group('tu/keuangan', ['filter' => 'auth'], function ($routes) {
 
     // BOS/BOP
     $routes->get('bos', 'TuKeuangan::bos');
+    $routes->get('bos/detail/(:num)', 'TuKeuangan::bosDetail/$1');
 
     // Persetujuan
     $routes->get('persetujuan', 'TuKeuangan::persetujuan');
