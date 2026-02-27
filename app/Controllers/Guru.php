@@ -2,438 +2,322 @@
 
 namespace App\Controllers;
 
-use App\Models\GuruModel;
+use App\Models\TeacherModel;
 
 class Guru extends BaseController
 {
     protected $guruModel;
 
+    // Role yang boleh VIEW
+    protected $viewRoles = ['kepsek', 'tu', 'superadmin'];
+
+    // Role yang boleh CRUD
+    protected $editRoles = ['tu', 'superadmin'];
+
     public function __construct()
     {
-        $this->guruModel = new GuruModel();
+        $this->guruModel = new TeacherModel();
         helper(['form', 'url']);
     }
 
-    public function index()
+    // ==============================
+    // AUTH HELPER
+    // ==============================
+    private function authCheck(bool $requireEdit = false): void
     {
-        $this->checkRole('kepsek');
+        if (!session()->get('isLoggedIn')) {
+            redirect()->to(base_url('auth/login'))->send();
+            exit;
+        }
 
-        $data = [
-            'username' => session()->get('fullname'),
-            'guru' => $this->guruModel->getGuruAktif()
-        ];
+        $role = session()->get('role');
 
-        return view('Kepsek/guru/index', $data);
+        if (!in_array($role, $this->viewRoles)) {
+            redirect()->to(base_url('dashboard'))->with('error', 'Akses ditolak')->send();
+            exit;
+        }
+
+        if ($requireEdit && !in_array($role, $this->editRoles)) {
+            redirect()->to(base_url('guru'))->with('error', 'Akses ditolak')->send();
+            exit;
+        }
     }
-    
-    public function add()
+
+    private function canEdit(): bool
     {
-        $this->checkRole('kepsek');
-
-        $data = [
-            'username' => session()->get('fullname')
-        ];
-
-        return view('Kepsek/guru/add', $data);
+        return in_array(session()->get('role'), $this->editRoles);
     }
 
     // ==============================
-    // SIMPAN DATA GURU BARU
+    // INDEX — daftar guru
+    // ==============================
+    public function index()
+    {
+        $this->authCheck();
+
+        $data = [
+            'title'   => 'Data Guru',
+            'guru'    => $this->guruModel->getGuruAktif(),
+            'canEdit' => $this->canEdit(),
+        ];
+
+        return view('data_guru/index', $data);
+    }
+
+    // ==============================
+    // ADD — form tambah
+    // ==============================
+    public function add()
+    {
+        $this->authCheck(true);
+
+        $data = [
+            'title' => 'Tambah Guru',
+            'mode'  => 'add',
+            'guru'  => [],
+        ];
+
+        return view('data_guru/form', $data);
+    }
+
+    // ==============================
+    // STORE — simpan data baru
     // ==============================
     public function store()
     {
-        $this->checkRole('kepsek');
+        $this->authCheck(true);
 
-        // Validasi Input
-        $validation = \Config\Services::validation();
-        $validation->setRules([
+        $rules = [
+            'full_name' => [
+                'rules'  => 'required|min_length[3]',
+                'errors' => ['required' => 'Nama harus diisi', 'min_length' => 'Nama minimal 3 karakter'],
+            ],
+            'gender' => [
+                'rules'  => 'required|in_list[L,P]',
+                'errors' => ['required' => 'Jenis kelamin harus dipilih'],
+            ],
+            'religion' => [
+                'rules'  => 'required',
+                'errors' => ['required' => 'Agama harus dipilih'],
+            ],
+            'last_education' => [
+                'rules'  => 'required',
+                'errors' => ['required' => 'Pendidikan terakhir harus dipilih'],
+            ],
+            'employment_status' => [
+                'rules'  => 'required|in_list[PNS,PPPK,Honorer,GTY,GTT]',
+                'errors' => ['required' => 'Status kepegawaian harus dipilih'],
+            ],
             'nip' => [
-                'rules' => 'required|is_unique[guru.nip]',
-                'errors' => [
-                    'required' => 'NIP harus diisi',
-                    'is_unique' => 'NIP sudah terdaftar'
-                ]
-            ],
-            'nama' => [
-                'rules' => 'required|min_length[3]',
-                'errors' => [
-                    'required' => 'Nama harus diisi',
-                    'min_length' => 'Nama minimal 3 karakter'
-                ]
-            ],
-            'jenis_kelamin' => [
-                'rules' => 'required|in_list[L,P]',
-                'errors' => [
-                    'required' => 'Jenis kelamin harus dipilih',
-                    'in_list' => 'Jenis kelamin tidak valid'
-                ]
-            ],
-            'agama' => [
-                'rules' => 'required',
-                'errors' => [
-                    'required' => 'Agama harus dipilih'
-                ]
-            ],
-            'no_hp' => [
-                'rules' => 'required|numeric|min_length[10]|max_length[13]',
-                'errors' => [
-                    'required' => 'No. HP harus diisi',
-                    'numeric' => 'No. HP harus berupa angka',
-                    'min_length' => 'No. HP minimal 10 digit',
-                    'max_length' => 'No. HP maksimal 13 digit'
-                ]
+                'rules'  => 'permit_empty|is_unique[teachers.nip]',
+                'errors' => ['is_unique' => 'NIP sudah terdaftar'],
             ],
             'email' => [
-                'rules' => 'permit_empty|valid_email|is_unique[guru.email]',
-                'errors' => [
-                    'valid_email' => 'Format email tidak valid',
-                    'is_unique' => 'Email sudah terdaftar'
-                ]
+                'rules'  => 'permit_empty|valid_email|is_unique[teachers.email]',
+                'errors' => ['valid_email' => 'Format email tidak valid', 'is_unique' => 'Email sudah terdaftar'],
             ],
-            'pendidikan_terakhir' => [
-                'rules' => 'required',
-                'errors' => [
-                    'required' => 'Pendidikan terakhir harus dipilih'
-                ]
+            'photo' => [
+                'rules'  => 'permit_empty|max_size[photo,2048]|is_image[photo]|mime_in[photo,image/jpg,image/jpeg,image/png]',
+                'errors' => ['max_size' => 'Foto maksimal 2MB', 'is_image' => 'File harus berupa gambar'],
             ],
-            'jabatan' => [
-                'rules' => 'required',
-                'errors' => [
-                    'required' => 'Jabatan harus diisi'
-                ]
-            ],
-            'status_kepegawaian' => [
-                'rules' => 'required|in_list[PNS,PPPK,Honorer,Kontrak]',
-                'errors' => [
-                    'required' => 'Status kepegawaian harus dipilih',
-                    'in_list' => 'Status kepegawaian tidak valid'
-                ]
-            ],
-            'foto' => [
-                'rules' => 'permit_empty|uploaded[foto]|max_size[foto,2048]|is_image[foto]|mime_in[foto,image/jpg,image/jpeg,image/png]',
-                'errors' => [
-                    'uploaded' => 'File foto harus diupload',
-                    'max_size' => 'Ukuran foto maksimal 2MB',
-                    'is_image' => 'File harus berupa gambar',
-                    'mime_in' => 'Format foto harus JPG, JPEG, atau PNG'
-                ]
-            ]
-        ]);
-
-        if (!$validation->withRequest($this->request)->run()) {
-            return redirect()->back()->withInput()->with('errors', $validation->getErrors());
-        }
-
-        // Prepare data
-        $data = [
-            'nip' => $this->request->getPost('nip'),
-            'nama' => $this->request->getPost('nama'),
-            'jenis_kelamin' => $this->request->getPost('jenis_kelamin'),
-            'tempat_lahir' => $this->request->getPost('tempat_lahir'),
-            'tanggal_lahir' => $this->request->getPost('tanggal_lahir'),
-            'alamat' => $this->request->getPost('alamat'),
-            'agama' => $this->request->getPost('agama'),
-            'no_hp' => $this->request->getPost('no_hp'),
-            'email' => $this->request->getPost('email'),
-            'pendidikan_terakhir' => $this->request->getPost('pendidikan_terakhir'),
-            'jabatan' => $this->request->getPost('jabatan'),
-            'status_kepegawaian' => $this->request->getPost('status_kepegawaian'),
-            'is_active' => 1
         ];
 
-        // Handle file upload
-        $foto = $this->request->getFile('foto');
-        if ($foto && $foto->isValid() && !$foto->hasMoved()) {
-            $newName = $foto->getRandomName();
-            $foto->move(ROOTPATH . 'public/uploads/guru', $newName);
-            $data['foto'] = $newName;
+        if (!$this->validate($rules)) {
+            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
         }
 
-        // Save to database
-        if ($this->guruModel->insert($data)) {
-            return redirect()->to(base_url('kepsek/guru'))->with('success', 'Data guru berhasil ditambahkan');
-        } else {
-            return redirect()->back()->withInput()->with('error', 'Gagal menambahkan data guru');
+        $saveData = [
+            'nip'               => $this->request->getPost('nip'),
+            'nuptk'             => $this->request->getPost('nuptk'),
+            'full_name'         => $this->request->getPost('full_name'),
+            'gender'            => $this->request->getPost('gender'),
+            'religion'          => $this->request->getPost('religion'),
+            'birth_place'       => $this->request->getPost('birth_place'),
+            'birth_date'        => $this->request->getPost('birth_date') ?: null,
+            'address'           => $this->request->getPost('address'),
+            'phone'             => $this->request->getPost('phone'),
+            'email'             => $this->request->getPost('email'),
+            'last_education'    => $this->request->getPost('last_education'),
+            'education_major'   => $this->request->getPost('education_major'),
+            'employment_status' => $this->request->getPost('employment_status'),
+            'joined_date'       => $this->request->getPost('joined_date') ?: null,
+        ];
+
+        // Upload foto
+        $photo = $this->request->getFile('photo');
+        if ($photo && $photo->isValid() && !$photo->hasMoved()) {
+            $newName = $photo->getRandomName();
+            $photo->move(ROOTPATH . 'public/uploads/guru', $newName);
+            $saveData['photo'] = $newName;
         }
+
+        if ($this->guruModel->insert($saveData)) {
+            return redirect()->to(base_url('guru'))->with('success', 'Data guru berhasil ditambahkan');
+        }
+
+        return redirect()->back()->withInput()->with('error', 'Gagal menambahkan data guru');
     }
 
     // ==============================
-    // DETAIL GURU
+    // DETAIL — lihat detail
     // ==============================
     public function detail($id)
     {
-        $this->checkRole('kepsek');
+        $this->authCheck();
 
         $guru = $this->guruModel->getGuruById($id);
 
         if (!$guru) {
-            return redirect()->to(base_url('kepsek/guru'))->with('error', 'Data guru tidak ditemukan');
+            return redirect()->to(base_url('guru'))->with('error', 'Data guru tidak ditemukan');
         }
 
         $data = [
-            'username' => session()->get('fullname'),
-            'guru' => $guru
+            'title'   => 'Detail Guru',
+            'guru'    => $guru,
+            'canEdit' => $this->canEdit(),
         ];
 
-        return view('Kepsek/guru/detail', $data);
+        return view('data_guru/detail', $data);
     }
 
     // ==============================
-    // FORM EDIT GURU
+    // EDIT — form edit
     // ==============================
     public function edit($id)
     {
-        $this->checkRole('kepsek');
+        $this->authCheck(true);
 
         $guru = $this->guruModel->getGuruById($id);
 
         if (!$guru) {
-            return redirect()->to(base_url('kepsek/guru'))->with('error', 'Data guru tidak ditemukan');
+            return redirect()->to(base_url('guru'))->with('error', 'Data guru tidak ditemukan');
         }
 
         $data = [
-            'username' => session()->get('fullname'),
-            'guru' => $guru
+            'title' => 'Edit Guru',
+            'mode'  => 'edit',
+            'guru'  => $guru,
         ];
 
-        return view('Kepsek/guru/edit', $data);
+        return view('data_guru/form', $data);
     }
 
     // ==============================
-    // UPDATE DATA GURU
+    // UPDATE — simpan perubahan
     // ==============================
     public function update($id)
     {
-        $this->checkRole('kepsek');
+        $this->authCheck(true);
 
         $guru = $this->guruModel->getGuruById($id);
 
         if (!$guru) {
-            return redirect()->to(base_url('kepsek/guru'))->with('error', 'Data guru tidak ditemukan');
+            return redirect()->to(base_url('guru'))->with('error', 'Data guru tidak ditemukan');
         }
 
-        // Validasi Input
-        $validation = \Config\Services::validation();
         $rules = [
+            'full_name' => [
+                'rules'  => 'required|min_length[3]',
+                'errors' => ['required' => 'Nama harus diisi'],
+            ],
+            'gender' => [
+                'rules'  => 'required|in_list[L,P]',
+                'errors' => ['required' => 'Jenis kelamin harus dipilih'],
+            ],
+            'religion' => [
+                'rules'  => 'required',
+                'errors' => ['required' => 'Agama harus dipilih'],
+            ],
+            'last_education' => [
+                'rules'  => 'required',
+                'errors' => ['required' => 'Pendidikan terakhir harus dipilih'],
+            ],
+            'employment_status' => [
+                'rules'  => 'required|in_list[PNS,PPPK,Honorer,GTY,GTT]',
+                'errors' => ['required' => 'Status kepegawaian harus dipilih'],
+            ],
             'nip' => [
-                'rules' => "required|is_unique[guru.nip,idguru,{$id}]",
-                'errors' => [
-                    'required' => 'NIP harus diisi',
-                    'is_unique' => 'NIP sudah terdaftar'
-                ]
-            ],
-            'nama' => [
-                'rules' => 'required|min_length[3]',
-                'errors' => [
-                    'required' => 'Nama harus diisi',
-                    'min_length' => 'Nama minimal 3 karakter'
-                ]
-            ],
-            'jenis_kelamin' => [
-                'rules' => 'required|in_list[L,P]',
-                'errors' => [
-                    'required' => 'Jenis kelamin harus dipilih',
-                    'in_list' => 'Jenis kelamin tidak valid'
-                ]
-            ],
-            'agama' => [
-                'rules' => 'required',
-                'errors' => ['required' => 'Agama harus dipilih']
-            ],
-            'no_hp' => [
-                'rules' => 'required|numeric|min_length[10]|max_length[13]',
-                'errors' => [
-                    'required' => 'No. HP harus diisi',
-                    'numeric' => 'No. HP harus berupa angka',
-                    'min_length' => 'No. HP minimal 10 digit',
-                    'max_length' => 'No. HP maksimal 13 digit'
-                ]
+                'rules'  => "permit_empty|is_unique[teachers.nip,id,{$id}]",
+                'errors' => ['is_unique' => 'NIP sudah terdaftar'],
             ],
             'email' => [
-                'rules' => "permit_empty|valid_email|is_unique[guru.email,idguru,{$id}]",
-                'errors' => [
-                    'valid_email' => 'Format email tidak valid',
-                    'is_unique' => 'Email sudah terdaftar'
-                ]
+                'rules'  => "permit_empty|valid_email|is_unique[teachers.email,id,{$id}]",
+                'errors' => ['valid_email' => 'Format email tidak valid', 'is_unique' => 'Email sudah terdaftar'],
             ],
-            'pendidikan_terakhir' => [
-                'rules' => 'required',
-                'errors' => ['required' => 'Pendidikan terakhir harus dipilih']
+            'photo' => [
+                'rules'  => 'permit_empty|max_size[photo,2048]|is_image[photo]|mime_in[photo,image/jpg,image/jpeg,image/png]',
+                'errors' => ['max_size' => 'Foto maksimal 2MB', 'is_image' => 'File harus berupa gambar'],
             ],
-            'jabatan' => [
-                'rules' => 'required',
-                'errors' => ['required' => 'Jabatan harus diisi']
-            ],
-            'status_kepegawaian' => [
-                'rules' => 'required|in_list[PNS,PPPK,Honorer,Kontrak]',
-                'errors' => [
-                    'required' => 'Status kepegawaian harus dipilih',
-                    'in_list' => 'Status kepegawaian tidak valid'
-                ]
-            ],
-            'foto' => [
-                'rules' => 'permit_empty|uploaded[foto]|max_size[foto,2048]|is_image[foto]|mime_in[foto,image/jpg,image/jpeg,image/png]',
-                'errors' => [
-                    'max_size' => 'Ukuran foto maksimal 2MB',
-                    'is_image' => 'File harus berupa gambar',
-                    'mime_in' => 'Format foto harus JPG, JPEG, atau PNG'
-                ]
-            ]
         ];
 
-        $validation->setRules($rules);
-
-        if (!$validation->withRequest($this->request)->run()) {
-            return redirect()->back()->withInput()->with('errors', $validation->getErrors());
+        if (!$this->validate($rules)) {
+            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
         }
 
-        // Prepare data
-        $data = [
-            'nip' => $this->request->getPost('nip'),
-            'nama' => $this->request->getPost('nama'),
-            'jenis_kelamin' => $this->request->getPost('jenis_kelamin'),
-            'tempat_lahir' => $this->request->getPost('tempat_lahir'),
-            'tanggal_lahir' => $this->request->getPost('tanggal_lahir'),
-            'alamat' => $this->request->getPost('alamat'),
-            'agama' => $this->request->getPost('agama'),
-            'no_hp' => $this->request->getPost('no_hp'),
-            'email' => $this->request->getPost('email'),
-            'pendidikan_terakhir' => $this->request->getPost('pendidikan_terakhir'),
-            'jabatan' => $this->request->getPost('jabatan'),
-            'status_kepegawaian' => $this->request->getPost('status_kepegawaian')
+        $saveData = [
+            'nip'               => $this->request->getPost('nip'),
+            'nuptk'             => $this->request->getPost('nuptk'),
+            'full_name'         => $this->request->getPost('full_name'),
+            'gender'            => $this->request->getPost('gender'),
+            'religion'          => $this->request->getPost('religion'),
+            'birth_place'       => $this->request->getPost('birth_place'),
+            'birth_date'        => $this->request->getPost('birth_date') ?: null,
+            'address'           => $this->request->getPost('address'),
+            'phone'             => $this->request->getPost('phone'),
+            'email'             => $this->request->getPost('email'),
+            'last_education'    => $this->request->getPost('last_education'),
+            'education_major'   => $this->request->getPost('education_major'),
+            'employment_status' => $this->request->getPost('employment_status'),
+            'joined_date'       => $this->request->getPost('joined_date') ?: null,
         ];
 
-        // Handle file upload
-        $foto = $this->request->getFile('foto');
-        if ($foto && $foto->isValid() && !$foto->hasMoved()) {
-            // Delete old photo
-            if (!empty($guru['foto']) && file_exists(ROOTPATH . 'public/uploads/guru/' . $guru['foto'])) {
-                unlink(ROOTPATH . 'public/uploads/guru/' . $guru['foto']);
+        // Upload foto baru
+        $photo = $this->request->getFile('photo');
+        if ($photo && $photo->isValid() && !$photo->hasMoved()) {
+            // Hapus foto lama
+            if (!empty($guru['photo'])) {
+                $oldPath = ROOTPATH . 'public/uploads/guru/' . $guru['photo'];
+                if (file_exists($oldPath)) unlink($oldPath);
             }
-
-            $newName = $foto->getRandomName();
-            $foto->move(ROOTPATH . 'public/uploads/guru', $newName);
-            $data['foto'] = $newName;
+            $newName = $photo->getRandomName();
+            $photo->move(ROOTPATH . 'public/uploads/guru', $newName);
+            $saveData['photo'] = $newName;
         }
 
-        // Update to database
-        if ($this->guruModel->update($id, $data)) {
-            return redirect()->to(base_url('kepsek/guru'))->with('success', 'Data guru berhasil diperbarui');
-        } else {
-            return redirect()->back()->withInput()->with('error', 'Gagal memperbarui data guru');
+        if ($this->guruModel->update($id, $saveData)) {
+            return redirect()->to(base_url('guru/detail/' . $id))->with('success', 'Data guru berhasil diperbarui');
         }
+
+        return redirect()->back()->withInput()->with('error', 'Gagal memperbarui data guru');
     }
 
     // ==============================
-    // KONFIRMASI HAPUS GURU
-    // ==============================
-    public function confirmDelete($id)
-    {
-        $this->checkRole('kepsek');
-
-        $guru = $this->guruModel->getGuruById($id);
-
-        if (!$guru) {
-            return redirect()->to(base_url('kepsek/guru'))->with('error', 'Data guru tidak ditemukan');
-        }
-
-        $data = [
-            'username' => session()->get('fullname'),
-            'guru' => $guru
-        ];
-
-        return view('Kepsek/guru/delete', $data);
-    }
-
-    // ==============================
-    // HAPUS GURU (SOFT DELETE)
+    // DELETE — hapus data
     // ==============================
     public function delete($id)
     {
-        $this->checkRole('kepsek');
+        $this->authCheck(true);
 
-        // Only allow POST method for delete
         if ($this->request->getMethod() !== 'post') {
-            return redirect()->to(base_url('kepsek/guru'))->with('error', 'Metode tidak diizinkan');
+            return redirect()->to(base_url('guru'));
         }
 
         $guru = $this->guruModel->getGuruById($id);
 
         if (!$guru) {
-            return redirect()->to(base_url('kepsek/guru'))->with('error', 'Data guru tidak ditemukan');
+            return redirect()->to(base_url('guru'))->with('error', 'Data guru tidak ditemukan');
         }
 
-        // Soft delete (set is_active = 0)
-        if ($this->guruModel->nonaktifkanGuru($id)) {
-            // Log activity (optional)
-            log_message('info', 'Guru deleted: ' . $guru['nama'] . ' (ID: ' . $id . ') by ' . session()->get('fullname'));
-
-            return redirect()->to(base_url('kepsek/guru'))->with('success', 'Data guru ' . $guru['nama'] . ' berhasil dihapus');
-        } else {
-            return redirect()->to(base_url('kepsek/guru'))->with('error', 'Gagal menghapus data guru');
-        }
-    }
-
-    // ==============================
-    // RESTORE GURU (OPTIONAL)
-    // ==============================
-    public function restore($id)
-    {
-        $this->checkRole('kepsek');
-
-        $guru = $this->guruModel->find($id);
-
-        if (!$guru) {
-            return redirect()->to(base_url('kepsek/guru'))->with('error', 'Data guru tidak ditemukan');
+        // Hapus foto jika ada
+        if (!empty($guru['photo'])) {
+            $path = ROOTPATH . 'public/uploads/guru/' . $guru['photo'];
+            if (file_exists($path)) unlink($path);
         }
 
-        // Restore (set is_active = 1)
-        if ($this->guruModel->update($id, ['is_active' => 1])) {
-            return redirect()->to(base_url('kepsek/guru'))->with('success', 'Data guru berhasil dipulihkan');
-        } else {
-            return redirect()->to(base_url('kepsek/guru'))->with('error', 'Gagal memulihkan data guru');
-        }
-    }
-
-    // ==============================
-    // PERMANENT DELETE (OPTIONAL - FOR ADMIN ONLY)
-    // ==============================
-    public function permanentDelete($id)
-    {
-        $this->checkRole('kepsek');
-
-        $guru = $this->guruModel->find($id);
-
-        if (!$guru) {
-            return redirect()->to(base_url('kepsek/guru'))->with('error', 'Data guru tidak ditemukan');
+        if ($this->guruModel->delete($id)) {
+            return redirect()->to(base_url('guru'))->with('success', 'Data guru ' . $guru['full_name'] . ' berhasil dihapus');
         }
 
-        // Delete photo if exists
-        if (!empty($guru['foto']) && file_exists(ROOTPATH . 'public/uploads/guru/' . $guru['foto'])) {
-            unlink(ROOTPATH . 'public/uploads/guru/' . $guru['foto']);
-        }
-
-        // Permanent delete
-        if ($this->guruModel->delete($id, true)) {
-            log_message('warning', 'Guru permanently deleted: ' . $guru['nama'] . ' (ID: ' . $id . ') by ' . session()->get('fullname'));
-
-            return redirect()->to(base_url('kepsek/guru'))->with('success', 'Data guru berhasil dihapus permanen');
-        } else {
-            return redirect()->to(base_url('kepsek/guru'))->with('error', 'Gagal menghapus data guru');
-        }
-    }
-
-    // ==============================
-    // CHECK USER ROLE
-    // ==============================
-    private function checkRole($role)
-    {
-        if (!session()->get('isLoggedIn')) {
-            return redirect()->to('/login')->with('error', 'Silakan login terlebih dahulu');
-        }
-
-        if (session()->get('selectedRole') !== $role && session()->get('role') !== $role) {
-            return redirect()->to('/dashboard')->with('error', 'Akses tidak diizinkan');
-        }
+        return redirect()->to(base_url('guru'))->with('error', 'Gagal menghapus data guru');
     }
 }

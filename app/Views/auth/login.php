@@ -19,17 +19,9 @@
         }
 
         @keyframes gradient {
-            0% {
-                background-position: 0% 50%;
-            }
-
-            50% {
-                background-position: 100% 50%;
-            }
-
-            100% {
-                background-position: 0% 50%;
-            }
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
 
         .glass {
@@ -50,15 +42,8 @@
         }
 
         @keyframes floating {
-
-            0%,
-            100% {
-                transform: translateY(0px);
-            }
-
-            50% {
-                transform: translateY(-20px);
-            }
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
         }
 
         .input-focus:focus {
@@ -91,25 +76,42 @@
                 <p class="text-gray-600 text-sm">Selamat datang kembali! Silakan login untuk melanjutkan.</p>
             </div>
 
+            <!-- Flash Messages -->
+            <?php if (session()->getFlashdata('error')): ?>
+                <div class="mb-6 flex items-center gap-3 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm">
+                    <i class="fas fa-circle-exclamation flex-shrink-0"></i>
+                    <span><?= session()->getFlashdata('error') ?></span>
+                </div>
+            <?php endif; ?>
+
+            <?php if (session()->getFlashdata('success')): ?>
+                <div class="mb-6 flex items-center gap-3 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-xl text-sm">
+                    <i class="fas fa-circle-check flex-shrink-0"></i>
+                    <span><?= session()->getFlashdata('success') ?></span>
+                </div>
+            <?php endif; ?>
+
             <!-- Login Form -->
             <form action="<?= base_url('auth/doLogin') ?>" method="POST" class="space-y-6">
                 <?= csrf_field() ?>
 
-                <!-- Email Input -->
+                <!-- Username Input -->
                 <div class="space-y-2">
-                    <label for="email" class="block text-sm font-semibold text-gray-700">
-                        <i class="fas fa-envelope mr-2 text-blue-600"></i>Email Address
+                    <label for="username" class="block text-sm font-semibold text-gray-700">
+                        <i class="fas fa-user mr-2 text-blue-600"></i>Username
                     </label>
                     <div class="relative">
                         <input
-                            type="email"
-                            id="email"
-                            name="email"
+                            type="text"
+                            id="username"
+                            name="username"
                             required
+                            value="<?= old('username') ?>"
+                            autocomplete="username"
                             class="input-focus w-full px-4 py-3 bg-white/80 border-2 border-gray-200 rounded-xl focus:outline-none transition-all text-gray-700 placeholder-gray-400"
-                            placeholder="nama@sekolah.com">
-                        <div class="absolute right-4 top-1/2 transform -translate-y-1/2">
-                            <i class="fas fa-user text-gray-400"></i>
+                            placeholder="Masukkan username Anda">
+                        <div class="absolute right-4 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                            <i class="fas fa-at text-gray-400"></i>
                         </div>
                     </div>
                 </div>
@@ -125,6 +127,7 @@
                             id="password"
                             name="password"
                             required
+                            autocomplete="current-password"
                             class="input-focus w-full px-4 py-3 bg-white/80 border-2 border-gray-200 rounded-xl focus:outline-none transition-all text-gray-700 placeholder-gray-400"
                             placeholder="••••••••">
                         <button
@@ -136,15 +139,12 @@
                     </div>
                 </div>
 
-                <!-- Remember Me & Forgot Password -->
+                <!-- Remember Me -->
                 <div class="flex items-center justify-between text-sm">
                     <label class="flex items-center cursor-pointer group">
                         <input type="checkbox" name="remember" class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 focus:ring-2 cursor-pointer">
                         <span class="ml-2 text-gray-600 group-hover:text-gray-900 transition-colors">Ingat saya</span>
                     </label>
-                    <a href="<?= base_url('auth/forgot-password') ?>" class="text-blue-600 hover:text-blue-700 font-semibold transition-colors">
-                        Lupa password?
-                    </a>
                 </div>
 
                 <!-- Login Button -->
@@ -155,40 +155,8 @@
                 </button>
             </form>
 
-            <!-- Divider -->
-            <div class="relative my-8">
-                <div class="absolute inset-0 flex items-center">
-                    <div class="w-full border-t border-gray-300"></div>
-                </div>
-                <div class="relative flex justify-center text-sm">
-                    <span class="px-4 bg-white text-gray-500">atau lanjutkan dengan</span>
-                </div>
-            </div>
-
-            <!-- Social Login -->
-            <div class="grid grid-cols-2 gap-4">
-                <button class="flex items-center justify-center px-4 py-3 bg-white border-2 border-gray-200 rounded-xl hover:bg-gray-50 hover:border-blue-500 transition-all group">
-                    <i class="fab fa-google text-red-500 text-xl mr-2 group-hover:scale-110 transition-transform"></i>
-                    <span class="font-semibold text-gray-700">Google</span>
-                </button>
-                <button class="flex items-center justify-center px-4 py-3 bg-white border-2 border-gray-200 rounded-xl hover:bg-gray-50 hover:border-blue-600 transition-all group">
-                    <i class="fab fa-microsoft text-blue-600 text-xl mr-2 group-hover:scale-110 transition-transform"></i>
-                    <span class="font-semibold text-gray-700">Microsoft</span>
-                </button>
-            </div>
-
-            <!-- Register Link -->
-            <div class="mt-8 text-center">
-                <p class="text-gray-600">
-                    Belum punya akun?
-                    <a href="<?= base_url('auth/register') ?>" class="text-blue-600 hover:text-blue-700 font-bold transition-colors">
-                        Daftar Sekarang
-                    </a>
-                </p>
-            </div>
-
             <!-- Back to Home -->
-            <div class="mt-6 text-center">
+            <div class="mt-8 text-center">
                 <a href="<?= base_url('/') ?>" class="inline-flex items-center text-gray-500 hover:text-gray-700 transition-colors">
                     <i class="fas fa-arrow-left mr-2"></i>
                     <span>Kembali ke Beranda</span>

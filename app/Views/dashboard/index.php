@@ -22,17 +22,9 @@
         }
 
         @keyframes gradientShift {
-            0% {
-                background-position: 0% 50%;
-            }
-
-            50% {
-                background-position: 100% 50%;
-            }
-
-            100% {
-                background-position: 0% 50%;
-            }
+            0%   { background-position: 0% 50%; }
+            50%  { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
 
         .role-card {
@@ -42,27 +34,6 @@
 
         .role-card:hover {
             transform: translateY(-12px);
-        }
-
-        .role-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            border-radius: 1.5rem;
-            padding: 2px;
-            background: linear-gradient(135deg, transparent, transparent);
-            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-            -webkit-mask-composite: xor;
-            mask-composite: exclude;
-            opacity: 0;
-            transition: opacity 0.4s;
-        }
-
-        .role-card:hover::before {
-            opacity: 1;
         }
 
         .btn-masuk {
@@ -94,15 +65,8 @@
         }
 
         @keyframes floating {
-
-            0%,
-            100% {
-                transform: translateY(0px);
-            }
-
-            50% {
-                transform: translateY(-20px);
-            }
+            0%, 100% { transform: translateY(0px); }
+            50%       { transform: translateY(-20px); }
         }
 
         .pulse-slow {
@@ -133,11 +97,12 @@
                     <div class="text-right hidden md:block">
                         <p class="text-xs text-gray-500 font-medium">Selamat Datang,</p>
                         <p class="font-bold text-gray-900 text-lg"><?= esc($username) ?></p>
+                        <p class="text-xs text-purple-600 font-semibold uppercase tracking-wide"><?= esc($role) ?></p>
                     </div>
                     <div class="w-14 h-14 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 rounded-2xl flex items-center justify-center text-white font-bold text-xl shadow-lg ring-4 ring-purple-100">
                         <?= strtoupper(substr($username, 0, 1)) ?>
                     </div>
-                    <a href="<?= base_url('logout') ?>" class="bg-gradient-to-r from-red-500 to-red-600 text-white px-5 py-2.5 rounded-xl hover:from-red-600 hover:to-red-700 transition-all font-semibold shadow-lg hover:shadow-xl transform hover:scale-105">
+                    <a href="<?= base_url('auth/logout') ?>" class="bg-gradient-to-r from-red-500 to-red-600 text-white px-5 py-2.5 rounded-xl hover:from-red-600 hover:to-red-700 transition-all font-semibold shadow-lg hover:shadow-xl transform hover:scale-105">
                         <i class="fas fa-sign-out-alt mr-2"></i>Logout
                     </a>
                 </div>
@@ -147,30 +112,26 @@
 
     <!-- Hero Section -->
     <div class="relative overflow-hidden">
-        <!-- Decorative Elements -->
         <div class="absolute top-0 left-0 w-96 h-96 bg-blue-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
         <div class="absolute top-0 right-0 w-96 h-96 bg-purple-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
         <div class="absolute bottom-0 left-1/2 w-96 h-96 bg-pink-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
 
         <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+
             <!-- Welcome Section -->
             <div class="text-center mb-16" data-aos="fade-up">
                 <div class="inline-flex items-center justify-center w-28 h-28 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 rounded-3xl shadow-2xl mb-8 floating">
                     <i class="fas fa-hand-sparkles text-white text-5xl"></i>
                 </div>
-
                 <h1 class="text-5xl md:text-7xl font-extrabold mb-6 leading-tight">
                     <span class="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
                         Selamat Datang di EduZone!
                     </span>
                 </h1>
-
                 <div class="max-w-2xl mx-auto mb-6">
-                    <p class="text-2xl font-bold text-gray-800 mb-3">
-                        Halo, <?= esc($username) ?>! 👋
-                    </p>
+                    <p class="text-2xl font-bold text-gray-800 mb-3">Halo, <?= esc($username) ?>! 👋</p>
                     <p class="text-gray-600 text-lg leading-relaxed">
-                        Terima kasih telah bergabung dengan platform manajemen sekolah digital terpadu yang memudahkan pengelolaan administrasi sekolah secara efisien dan modern.
+                        Anda login sebagai <span class="font-bold text-purple-600">Super Admin</span>. Pilih dashboard role yang ingin Anda akses.
                     </p>
                 </div>
 
@@ -186,21 +147,20 @@
                             <div class="flex-1 text-left">
                                 <h3 class="text-2xl font-bold text-gray-900 mb-3 flex items-center">
                                     <i class="fas fa-rocket text-blue-600 mr-2"></i>
-                                    Pilih Role Anda
+                                    Akses Super Admin
                                 </h3>
                                 <p class="text-gray-700 leading-relaxed text-base">
-                                    Untuk melanjutkan, silakan <span class="font-bold text-blue-600">pilih role yang sesuai</span> dengan posisi Anda di sekolah.
-                                    Setiap role memiliki akses dashboard dan fitur yang berbeda, disesuaikan dengan kebutuhan dan tanggung jawab masing-masing pengguna.
+                                    Sebagai <span class="font-bold text-blue-600">Super Admin</span>, Anda dapat mengakses seluruh dashboard role yang tersedia di sistem EduZone.
                                 </p>
                                 <div class="mt-4 flex flex-wrap gap-2">
                                     <span class="px-4 py-2 bg-blue-100 text-blue-700 rounded-full text-sm font-semibold">
-                                        <i class="fas fa-check-circle mr-1"></i>Dashboard Khusus
+                                        <i class="fas fa-check-circle mr-1"></i>Akses Penuh
                                     </span>
                                     <span class="px-4 py-2 bg-purple-100 text-purple-700 rounded-full text-sm font-semibold">
-                                        <i class="fas fa-check-circle mr-1"></i>Akses Terbatas
+                                        <i class="fas fa-check-circle mr-1"></i>Semua Role
                                     </span>
                                     <span class="px-4 py-2 bg-pink-100 text-pink-700 rounded-full text-sm font-semibold">
-                                        <i class="fas fa-check-circle mr-1"></i>Fitur Lengkap
+                                        <i class="fas fa-check-circle mr-1"></i>Manajemen Sistem
                                     </span>
                                 </div>
                             </div>
@@ -211,11 +171,9 @@
 
             <!-- Role Selection Title -->
             <div class="text-center mb-12" data-aos="fade-up" data-aos-delay="200">
-                <h2 class="text-4xl font-bold text-gray-900 mb-4">
-                    Pilih Role Anda
-                </h2>
+                <h2 class="text-4xl font-bold text-gray-900 mb-4">Pilih Dashboard Role</h2>
                 <p class="text-gray-600 text-lg max-w-2xl mx-auto">
-                    Klik pada salah satu role di bawah ini untuk mengakses dashboard yang sesuai dengan posisi Anda
+                    Klik salah satu role di bawah untuk mengakses dashboard yang sesuai
                 </p>
             </div>
 
@@ -225,41 +183,19 @@
                 <!-- Kepala Sekolah -->
                 <div class="role-card group" data-aos="zoom-in" data-aos-delay="100">
                     <div class="bg-white rounded-3xl p-8 shadow-xl hover:shadow-2xl border-2 border-gray-100 hover:border-blue-400 relative overflow-hidden h-full">
-                        <!-- Decorative Circle -->
                         <div class="absolute -top-10 -right-10 w-40 h-40 bg-gradient-to-br from-blue-100 to-blue-200 rounded-full opacity-50 group-hover:scale-150 transition-transform duration-500"></div>
-
                         <div class="relative">
-                            <!-- Icon -->
                             <div class="w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform">
                                 <i class="fas fa-user-tie text-white text-3xl"></i>
                             </div>
-
-                            <!-- Content -->
-                            <h3 class="text-2xl font-bold text-gray-900 mb-3 group-hover:text-blue-600 transition-colors">
-                                Kepala Sekolah
-                            </h3>
-                            <p class="text-gray-600 mb-6 leading-relaxed">
-                                Kelola dan monitor seluruh aktivitas sekolah dengan akses penuh ke semua fitur manajemen
-                            </p>
-
-                            <!-- Features List -->
+                            <h3 class="text-2xl font-bold text-gray-900 mb-3 group-hover:text-blue-600 transition-colors">Kepala Sekolah</h3>
+                            <p class="text-gray-600 mb-6 leading-relaxed">Kelola dan monitor seluruh aktivitas sekolah dengan akses penuh ke semua fitur manajemen</p>
                             <ul class="space-y-2 mb-6 text-sm text-gray-600">
-                                <li class="flex items-center">
-                                    <i class="fas fa-check-circle text-blue-500 mr-2"></i>
-                                    Dashboard Lengkap
-                                </li>
-                                <li class="flex items-center">
-                                    <i class="fas fa-check-circle text-blue-500 mr-2"></i>
-                                    Laporan & Analitik
-                                </li>
-                                <li class="flex items-center">
-                                    <i class="fas fa-check-circle text-blue-500 mr-2"></i>
-                                    Manajemen Staff
-                                </li>
+                                <li class="flex items-center"><i class="fas fa-check-circle text-blue-500 mr-2"></i>Dashboard Lengkap</li>
+                                <li class="flex items-center"><i class="fas fa-check-circle text-blue-500 mr-2"></i>Laporan & Analitik</li>
+                                <li class="flex items-center"><i class="fas fa-check-circle text-blue-500 mr-2"></i>Manajemen Staff</li>
                             </ul>
-
-                            <!-- Button -->
-                            <a href="<?= base_url('dashboard/select/kepsek') ?>" class="btn-masuk block w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-3.5 px-6 rounded-xl font-semibold text-center hover:from-blue-600 hover:to-blue-700 transform hover:scale-105 transition-all shadow-lg hover:shadow-xl">
+                            <a href="<?= base_url('dashboard/kepsek') ?>" class="btn-masuk block w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-3.5 px-6 rounded-xl font-semibold text-center hover:from-blue-600 hover:to-blue-700 transform hover:scale-105 transition-all shadow-lg hover:shadow-xl">
                                 <i class="fas fa-sign-in-alt mr-2"></i>Masuk sebagai Kepala Sekolah
                             </a>
                         </div>
@@ -270,35 +206,18 @@
                 <div class="role-card group" data-aos="zoom-in" data-aos-delay="200">
                     <div class="bg-white rounded-3xl p-8 shadow-xl hover:shadow-2xl border-2 border-gray-100 hover:border-green-400 relative overflow-hidden h-full">
                         <div class="absolute -top-10 -right-10 w-40 h-40 bg-gradient-to-br from-green-100 to-green-200 rounded-full opacity-50 group-hover:scale-150 transition-transform duration-500"></div>
-
                         <div class="relative">
                             <div class="w-20 h-20 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform">
                                 <i class="fas fa-file-alt text-white text-3xl"></i>
                             </div>
-
-                            <h3 class="text-2xl font-bold text-gray-900 mb-3 group-hover:text-green-600 transition-colors">
-                                Tata Usaha
-                            </h3>
-                            <p class="text-gray-600 mb-6 leading-relaxed">
-                                Kelola administrasi dan dokumentasi sekolah dengan sistem yang terorganisir
-                            </p>
-
+                            <h3 class="text-2xl font-bold text-gray-900 mb-3 group-hover:text-green-600 transition-colors">Tata Usaha</h3>
+                            <p class="text-gray-600 mb-6 leading-relaxed">Kelola administrasi dan dokumentasi sekolah dengan sistem yang terorganisir</p>
                             <ul class="space-y-2 mb-6 text-sm text-gray-600">
-                                <li class="flex items-center">
-                                    <i class="fas fa-check-circle text-green-500 mr-2"></i>
-                                    Manajemen Dokumen
-                                </li>
-                                <li class="flex items-center">
-                                    <i class="fas fa-check-circle text-green-500 mr-2"></i>
-                                    Surat Menyurat
-                                </li>
-                                <li class="flex items-center">
-                                    <i class="fas fa-check-circle text-green-500 mr-2"></i>
-                                    Arsip Digital
-                                </li>
+                                <li class="flex items-center"><i class="fas fa-check-circle text-green-500 mr-2"></i>Manajemen Dokumen</li>
+                                <li class="flex items-center"><i class="fas fa-check-circle text-green-500 mr-2"></i>Surat Menyurat</li>
+                                <li class="flex items-center"><i class="fas fa-check-circle text-green-500 mr-2"></i>Arsip Digital</li>
                             </ul>
-
-                            <a href="<?= base_url('dashboard/select/tu') ?>" class="btn-masuk block w-full bg-gradient-to-r from-green-500 to-green-600 text-white py-3.5 px-6 rounded-xl font-semibold text-center hover:from-green-600 hover:to-green-700 transform hover:scale-105 transition-all shadow-lg hover:shadow-xl">
+                            <a href="<?= base_url('dashboard/tu') ?>" class="btn-masuk block w-full bg-gradient-to-r from-green-500 to-green-600 text-white py-3.5 px-6 rounded-xl font-semibold text-center hover:from-green-600 hover:to-green-700 transform hover:scale-105 transition-all shadow-lg hover:shadow-xl">
                                 <i class="fas fa-sign-in-alt mr-2"></i>Masuk sebagai Tata Usaha
                             </a>
                         </div>
@@ -309,35 +228,18 @@
                 <div class="role-card group" data-aos="zoom-in" data-aos-delay="300">
                     <div class="bg-white rounded-3xl p-8 shadow-xl hover:shadow-2xl border-2 border-gray-100 hover:border-purple-400 relative overflow-hidden h-full">
                         <div class="absolute -top-10 -right-10 w-40 h-40 bg-gradient-to-br from-purple-100 to-purple-200 rounded-full opacity-50 group-hover:scale-150 transition-transform duration-500"></div>
-
                         <div class="relative">
                             <div class="w-20 h-20 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform">
                                 <i class="fas fa-chalkboard-teacher text-white text-3xl"></i>
                             </div>
-
-                            <h3 class="text-2xl font-bold text-gray-900 mb-3 group-hover:text-purple-600 transition-colors">
-                                Wali Kelas
-                            </h3>
-                            <p class="text-gray-600 mb-6 leading-relaxed">
-                                Kelola data siswa, absensi, dan monitoring perkembangan kelas Anda
-                            </p>
-
+                            <h3 class="text-2xl font-bold text-gray-900 mb-3 group-hover:text-purple-600 transition-colors">Wali Kelas</h3>
+                            <p class="text-gray-600 mb-6 leading-relaxed">Kelola data siswa, absensi, dan monitoring perkembangan kelas Anda</p>
                             <ul class="space-y-2 mb-6 text-sm text-gray-600">
-                                <li class="flex items-center">
-                                    <i class="fas fa-check-circle text-purple-500 mr-2"></i>
-                                    Data Siswa Kelas
-                                </li>
-                                <li class="flex items-center">
-                                    <i class="fas fa-check-circle text-purple-500 mr-2"></i>
-                                    Absensi & Presensi
-                                </li>
-                                <li class="flex items-center">
-                                    <i class="fas fa-check-circle text-purple-500 mr-2"></i>
-                                    Laporan Siswa
-                                </li>
+                                <li class="flex items-center"><i class="fas fa-check-circle text-purple-500 mr-2"></i>Data Siswa Kelas</li>
+                                <li class="flex items-center"><i class="fas fa-check-circle text-purple-500 mr-2"></i>Absensi & Presensi</li>
+                                <li class="flex items-center"><i class="fas fa-check-circle text-purple-500 mr-2"></i>Laporan Siswa</li>
                             </ul>
-
-                            <a href="<?= base_url('dashboard/select/wakel') ?>" class="btn-masuk block w-full bg-gradient-to-r from-purple-500 to-purple-600 text-white py-3.5 px-6 rounded-xl font-semibold text-center hover:from-purple-600 hover:to-purple-700 transform hover:scale-105 transition-all shadow-lg hover:shadow-xl">
+                            <a href="<?= base_url('dashboard/wakel') ?>" class="btn-masuk block w-full bg-gradient-to-r from-purple-500 to-purple-600 text-white py-3.5 px-6 rounded-xl font-semibold text-center hover:from-purple-600 hover:to-purple-700 transform hover:scale-105 transition-all shadow-lg hover:shadow-xl">
                                 <i class="fas fa-sign-in-alt mr-2"></i>Masuk sebagai Wali Kelas
                             </a>
                         </div>
@@ -348,35 +250,18 @@
                 <div class="role-card group" data-aos="zoom-in" data-aos-delay="400">
                     <div class="bg-white rounded-3xl p-8 shadow-xl hover:shadow-2xl border-2 border-gray-100 hover:border-pink-400 relative overflow-hidden h-full">
                         <div class="absolute -top-10 -right-10 w-40 h-40 bg-gradient-to-br from-pink-100 to-pink-200 rounded-full opacity-50 group-hover:scale-150 transition-transform duration-500"></div>
-
                         <div class="relative">
                             <div class="w-20 h-20 bg-gradient-to-br from-pink-500 to-pink-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform">
                                 <i class="fas fa-user-friends text-white text-3xl"></i>
                             </div>
-
-                            <h3 class="text-2xl font-bold text-gray-900 mb-3 group-hover:text-pink-600 transition-colors">
-                                Bimbingan Konseling
-                            </h3>
-                            <p class="text-gray-600 mb-6 leading-relaxed">
-                                Berikan bimbingan dan konseling untuk mendukung perkembangan siswa
-                            </p>
-
+                            <h3 class="text-2xl font-bold text-gray-900 mb-3 group-hover:text-pink-600 transition-colors">Bimbingan Konseling</h3>
+                            <p class="text-gray-600 mb-6 leading-relaxed">Berikan bimbingan dan konseling untuk mendukung perkembangan siswa</p>
                             <ul class="space-y-2 mb-6 text-sm text-gray-600">
-                                <li class="flex items-center">
-                                    <i class="fas fa-check-circle text-pink-500 mr-2"></i>
-                                    Konseling Siswa
-                                </li>
-                                <li class="flex items-center">
-                                    <i class="fas fa-check-circle text-pink-500 mr-2"></i>
-                                    Catatan Bimbingan
-                                </li>
-                                <li class="flex items-center">
-                                    <i class="fas fa-check-circle text-pink-500 mr-2"></i>
-                                    Monitoring Perilaku
-                                </li>
+                                <li class="flex items-center"><i class="fas fa-check-circle text-pink-500 mr-2"></i>Konseling Siswa</li>
+                                <li class="flex items-center"><i class="fas fa-check-circle text-pink-500 mr-2"></i>Catatan Bimbingan</li>
+                                <li class="flex items-center"><i class="fas fa-check-circle text-pink-500 mr-2"></i>Monitoring Perilaku</li>
                             </ul>
-
-                            <a href="<?= base_url('dashboard/select/bk') ?>" class="btn-masuk block w-full bg-gradient-to-r from-pink-500 to-pink-600 text-white py-3.5 px-6 rounded-xl font-semibold text-center hover:from-pink-600 hover:to-pink-700 transform hover:scale-105 transition-all shadow-lg hover:shadow-xl">
+                            <a href="<?= base_url('dashboard/bk') ?>" class="btn-masuk block w-full bg-gradient-to-r from-pink-500 to-pink-600 text-white py-3.5 px-6 rounded-xl font-semibold text-center hover:from-pink-600 hover:to-pink-700 transform hover:scale-105 transition-all shadow-lg hover:shadow-xl">
                                 <i class="fas fa-sign-in-alt mr-2"></i>Masuk sebagai BK
                             </a>
                         </div>
@@ -387,35 +272,18 @@
                 <div class="role-card group" data-aos="zoom-in" data-aos-delay="500">
                     <div class="bg-white rounded-3xl p-8 shadow-xl hover:shadow-2xl border-2 border-gray-100 hover:border-indigo-400 relative overflow-hidden h-full">
                         <div class="absolute -top-10 -right-10 w-40 h-40 bg-gradient-to-br from-indigo-100 to-indigo-200 rounded-full opacity-50 group-hover:scale-150 transition-transform duration-500"></div>
-
                         <div class="relative">
                             <div class="w-20 h-20 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform">
                                 <i class="fas fa-book-open text-white text-3xl"></i>
                             </div>
-
-                            <h3 class="text-2xl font-bold text-gray-900 mb-3 group-hover:text-indigo-600 transition-colors">
-                                Kurikulum
-                            </h3>
-                            <p class="text-gray-600 mb-6 leading-relaxed">
-                                Kelola kurikulum, silabus, dan program pembelajaran sekolah
-                            </p>
-
+                            <h3 class="text-2xl font-bold text-gray-900 mb-3 group-hover:text-indigo-600 transition-colors">Kurikulum</h3>
+                            <p class="text-gray-600 mb-6 leading-relaxed">Kelola kurikulum, silabus, dan program pembelajaran sekolah</p>
                             <ul class="space-y-2 mb-6 text-sm text-gray-600">
-                                <li class="flex items-center">
-                                    <i class="fas fa-check-circle text-indigo-500 mr-2"></i>
-                                    Manajemen Kurikulum
-                                </li>
-                                <li class="flex items-center">
-                                    <i class="fas fa-check-circle text-indigo-500 mr-2"></i>
-                                    Silabus & RPP
-                                </li>
-                                <li class="flex items-center">
-                                    <i class="fas fa-check-circle text-indigo-500 mr-2"></i>
-                                    Program Pembelajaran
-                                </li>
+                                <li class="flex items-center"><i class="fas fa-check-circle text-indigo-500 mr-2"></i>Manajemen Kurikulum</li>
+                                <li class="flex items-center"><i class="fas fa-check-circle text-indigo-500 mr-2"></i>Silabus & RPP</li>
+                                <li class="flex items-center"><i class="fas fa-check-circle text-indigo-500 mr-2"></i>Program Pembelajaran</li>
                             </ul>
-
-                            <a href="<?= base_url('dashboard/select/kurikulum') ?>" class="btn-masuk block w-full bg-gradient-to-r from-indigo-500 to-indigo-600 text-white py-3.5 px-6 rounded-xl font-semibold text-center hover:from-indigo-600 hover:to-indigo-700 transform hover:scale-105 transition-all shadow-lg hover:shadow-xl">
+                            <a href="<?= base_url('dashboard/kurikulum') ?>" class="btn-masuk block w-full bg-gradient-to-r from-indigo-500 to-indigo-600 text-white py-3.5 px-6 rounded-xl font-semibold text-center hover:from-indigo-600 hover:to-indigo-700 transform hover:scale-105 transition-all shadow-lg hover:shadow-xl">
                                 <i class="fas fa-sign-in-alt mr-2"></i>Masuk sebagai Kurikulum
                             </a>
                         </div>
@@ -426,36 +294,85 @@
                 <div class="role-card group" data-aos="zoom-in" data-aos-delay="600">
                     <div class="bg-white rounded-3xl p-8 shadow-xl hover:shadow-2xl border-2 border-gray-100 hover:border-orange-400 relative overflow-hidden h-full">
                         <div class="absolute -top-10 -right-10 w-40 h-40 bg-gradient-to-br from-orange-100 to-orange-200 rounded-full opacity-50 group-hover:scale-150 transition-transform duration-500"></div>
-
                         <div class="relative">
                             <div class="w-20 h-20 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform">
                                 <i class="fas fa-user-graduate text-white text-3xl"></i>
                             </div>
-
-                            <h3 class="text-2xl font-bold text-gray-900 mb-3 group-hover:text-orange-600 transition-colors">
-                                Guru
-                            </h3>
-                            <p class="text-gray-600 mb-6 leading-relaxed">
-                                Kelola mata pelajaran, nilai siswa, dan materi pembelajaran
-                            </p>
-
+                            <h3 class="text-2xl font-bold text-gray-900 mb-3 group-hover:text-orange-600 transition-colors">Guru</h3>
+                            <p class="text-gray-600 mb-6 leading-relaxed">Kelola mata pelajaran, nilai siswa, dan materi pembelajaran</p>
                             <ul class="space-y-2 mb-6 text-sm text-gray-600">
-                                <li class="flex items-center">
-                                    <i class="fas fa-check-circle text-orange-500 mr-2"></i>
-                                    Input Nilai Siswa
-                                </li>
-                                <li class="flex items-center">
-                                    <i class="fas fa-check-circle text-orange-500 mr-2"></i>
-                                    Materi Pelajaran
-                                </li>
-                                <li class="flex items-center">
-                                    <i class="fas fa-check-circle text-orange-500 mr-2"></i>
-                                    Jadwal Mengajar
-                                </li>
+                                <li class="flex items-center"><i class="fas fa-check-circle text-orange-500 mr-2"></i>Input Nilai Siswa</li>
+                                <li class="flex items-center"><i class="fas fa-check-circle text-orange-500 mr-2"></i>Materi Pelajaran</li>
+                                <li class="flex items-center"><i class="fas fa-check-circle text-orange-500 mr-2"></i>Jadwal Mengajar</li>
                             </ul>
-
-                            <a href="<?= base_url('dashboard/select/guru') ?>" class="btn-masuk block w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white py-3.5 px-6 rounded-xl font-semibold text-center hover:from-orange-600 hover:to-orange-700 transform hover:scale-105 transition-all shadow-lg hover:shadow-xl">
+                            <a href="<?= base_url('dashboard/guru') ?>" class="btn-masuk block w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white py-3.5 px-6 rounded-xl font-semibold text-center hover:from-orange-600 hover:to-orange-700 transform hover:scale-105 transition-all shadow-lg hover:shadow-xl">
                                 <i class="fas fa-sign-in-alt mr-2"></i>Masuk sebagai Guru
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Kesiswaan -->
+                <div class="role-card group" data-aos="zoom-in" data-aos-delay="700">
+                    <div class="bg-white rounded-3xl p-8 shadow-xl hover:shadow-2xl border-2 border-gray-100 hover:border-teal-400 relative overflow-hidden h-full">
+                        <div class="absolute -top-10 -right-10 w-40 h-40 bg-gradient-to-br from-teal-100 to-teal-200 rounded-full opacity-50 group-hover:scale-150 transition-transform duration-500"></div>
+                        <div class="relative">
+                            <div class="w-20 h-20 bg-gradient-to-br from-teal-500 to-teal-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform">
+                                <i class="fas fa-users text-white text-3xl"></i>
+                            </div>
+                            <h3 class="text-2xl font-bold text-gray-900 mb-3 group-hover:text-teal-600 transition-colors">Kesiswaan</h3>
+                            <p class="text-gray-600 mb-6 leading-relaxed">Kelola data kesiswaan, ekstrakurikuler, dan kegiatan siswa di sekolah</p>
+                            <ul class="space-y-2 mb-6 text-sm text-gray-600">
+                                <li class="flex items-center"><i class="fas fa-check-circle text-teal-500 mr-2"></i>Data Kesiswaan</li>
+                                <li class="flex items-center"><i class="fas fa-check-circle text-teal-500 mr-2"></i>Ekstrakurikuler</li>
+                                <li class="flex items-center"><i class="fas fa-check-circle text-teal-500 mr-2"></i>Prestasi Siswa</li>
+                            </ul>
+                            <a href="<?= base_url('dashboard/kesiswaan') ?>" class="btn-masuk block w-full bg-gradient-to-r from-teal-500 to-teal-600 text-white py-3.5 px-6 rounded-xl font-semibold text-center hover:from-teal-600 hover:to-teal-700 transform hover:scale-105 transition-all shadow-lg hover:shadow-xl">
+                                <i class="fas fa-sign-in-alt mr-2"></i>Masuk sebagai Kesiswaan
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Toolman -->
+                <div class="role-card group" data-aos="zoom-in" data-aos-delay="800">
+                    <div class="bg-white rounded-3xl p-8 shadow-xl hover:shadow-2xl border-2 border-gray-100 hover:border-yellow-400 relative overflow-hidden h-full">
+                        <div class="absolute -top-10 -right-10 w-40 h-40 bg-gradient-to-br from-yellow-100 to-yellow-200 rounded-full opacity-50 group-hover:scale-150 transition-transform duration-500"></div>
+                        <div class="relative">
+                            <div class="w-20 h-20 bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform">
+                                <i class="fas fa-tools text-white text-3xl"></i>
+                            </div>
+                            <h3 class="text-2xl font-bold text-gray-900 mb-3 group-hover:text-yellow-600 transition-colors">Teknisi Lab</h3>
+                            <p class="text-gray-600 mb-6 leading-relaxed">Kelola inventaris, perawatan peralatan, dan laporan kegiatan laboratorium</p>
+                            <ul class="space-y-2 mb-6 text-sm text-gray-600">
+                                <li class="flex items-center"><i class="fas fa-check-circle text-yellow-500 mr-2"></i>Inventaris Lab</li>
+                                <li class="flex items-center"><i class="fas fa-check-circle text-yellow-500 mr-2"></i>Booking Lab</li>
+                                <li class="flex items-center"><i class="fas fa-check-circle text-yellow-500 mr-2"></i>Laporan Harian</li>
+                            </ul>
+                            <a href="<?= base_url('dashboard/toolman') ?>" class="btn-masuk block w-full bg-gradient-to-r from-yellow-500 to-yellow-600 text-white py-3.5 px-6 rounded-xl font-semibold text-center hover:from-yellow-600 hover:to-yellow-700 transform hover:scale-105 transition-all shadow-lg hover:shadow-xl">
+                                <i class="fas fa-sign-in-alt mr-2"></i>Masuk sebagai Teknisi Lab
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Siswa -->
+                <div class="role-card group" data-aos="zoom-in" data-aos-delay="900">
+                    <div class="bg-white rounded-3xl p-8 shadow-xl hover:shadow-2xl border-2 border-gray-100 hover:border-cyan-400 relative overflow-hidden h-full">
+                        <div class="absolute -top-10 -right-10 w-40 h-40 bg-gradient-to-br from-cyan-100 to-cyan-200 rounded-full opacity-50 group-hover:scale-150 transition-transform duration-500"></div>
+                        <div class="relative">
+                            <div class="w-20 h-20 bg-gradient-to-br from-cyan-500 to-cyan-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform">
+                                <i class="fas fa-user-graduate text-white text-3xl"></i>
+                            </div>
+                            <h3 class="text-2xl font-bold text-gray-900 mb-3 group-hover:text-cyan-600 transition-colors">Siswa</h3>
+                            <p class="text-gray-600 mb-6 leading-relaxed">Lihat jadwal, nilai, absensi, dan informasi sekolah secara personal</p>
+                            <ul class="space-y-2 mb-6 text-sm text-gray-600">
+                                <li class="flex items-center"><i class="fas fa-check-circle text-cyan-500 mr-2"></i>Jadwal Pelajaran</li>
+                                <li class="flex items-center"><i class="fas fa-check-circle text-cyan-500 mr-2"></i>Nilai & Rapor</li>
+                                <li class="flex items-center"><i class="fas fa-check-circle text-cyan-500 mr-2"></i>Absensi Pribadi</li>
+                            </ul>
+                            <a href="<?= base_url('dashboard/siswa') ?>" class="btn-masuk block w-full bg-gradient-to-r from-cyan-500 to-cyan-600 text-white py-3.5 px-6 rounded-xl font-semibold text-center hover:from-cyan-600 hover:to-cyan-700 transform hover:scale-105 transition-all shadow-lg hover:shadow-xl">
+                                <i class="fas fa-sign-in-alt mr-2"></i>Masuk sebagai Siswa
                             </a>
                         </div>
                     </div>
@@ -463,7 +380,7 @@
 
             </div>
 
-            <!-- Additional Features Section -->
+            <!-- Features Section -->
             <div class="max-w-6xl mx-auto" data-aos="fade-up" data-aos-delay="700">
                 <div class="bg-white/70 backdrop-blur-lg rounded-3xl p-10 shadow-2xl border-2 border-gray-200">
                     <div class="text-center mb-10">
@@ -482,7 +399,6 @@
                             <h4 class="font-bold text-gray-900 text-lg mb-2">Keamanan Terjamin</h4>
                             <p class="text-gray-600 text-sm">Data terenkripsi dengan sistem keamanan tingkat enterprise</p>
                         </div>
-
                         <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl p-6 border-2 border-purple-200 hover:border-purple-400 transition-all hover:shadow-lg">
                             <div class="w-14 h-14 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center mb-4 shadow-md">
                                 <i class="fas fa-bolt text-white text-2xl"></i>
@@ -490,7 +406,6 @@
                             <h4 class="font-bold text-gray-900 text-lg mb-2">Akses Super Cepat</h4>
                             <p class="text-gray-600 text-sm">Performa tinggi dengan teknologi cloud terkini</p>
                         </div>
-
                         <div class="bg-gradient-to-br from-pink-50 to-pink-100 rounded-2xl p-6 border-2 border-pink-200 hover:border-pink-400 transition-all hover:shadow-lg">
                             <div class="w-14 h-14 bg-gradient-to-br from-pink-500 to-pink-600 rounded-xl flex items-center justify-center mb-4 shadow-md">
                                 <i class="fas fa-headset text-white text-2xl"></i>
@@ -500,35 +415,21 @@
                         </div>
                     </div>
 
-                    <!-- Info Credentials -->
                     <div class="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 rounded-2xl p-8 text-white">
-                        <div class="grid md:grid-cols-2 gap-6">
-                            <!-- <div class="items-center">
-                                <h5 class="font-bold text-lg mb-3 flex items-center">
-                                    <i class="fas fa-key mr-2"></i>
-                                    Demo Credentials
-                                </h5>
-                                <div class="space-y-2 text-sm bg-white/10 backdrop-blur rounded-xl p-4">
-                                    <p class="flex items-center">
-                                        <i class="fas fa-user w-6"></i>
-                                        <span class="font-mono bg-white/20 px-3 py-1.5 rounded-lg">kepsek</span>
-                                    </p>
-                                    <p class="flex items-center">
-                                        <i class="fas fa-lock w-6"></i>
-                                        <span class="font-mono bg-white/20 px-3 py-1.5 rounded-lg">belajar123</span>
-                                    </p>
-                                </div>
-                            </div> -->
-                            <div>
-                                <h5 class="font-bold text-lg mb-3 flex items-center">
-                                    <i class="fas fa-users mr-2"></i>
-                                    Role Tersedia
-                                </h5>
-                                <div class="space-y-2 text-sm bg-white/10 backdrop-blur rounded-xl p-4">
-                                    <p><i class="fas fa-check-circle mr-2"></i>Kepala Sekolah & Tata Usaha</p>
-                                    <p><i class="fas fa-check-circle mr-2"></i>Wali Kelas & Guru</p>
-                                    <p><i class="fas fa-check-circle mr-2"></i>BK & Kurikulum</p>
-                                </div>
+                        <div>
+                            <h5 class="font-bold text-lg mb-3 flex items-center">
+                                <i class="fas fa-users mr-2"></i>Role Tersedia di Sistem
+                            </h5>
+                            <div class="grid grid-cols-2 md:grid-cols-3 gap-2 text-sm bg-white/10 backdrop-blur rounded-xl p-4">
+                                <p><i class="fas fa-check-circle mr-2"></i>Kepala Sekolah</p>
+                                <p><i class="fas fa-check-circle mr-2"></i>Tata Usaha</p>
+                                <p><i class="fas fa-check-circle mr-2"></i>Kurikulum</p>
+                                <p><i class="fas fa-check-circle mr-2"></i>Wali Kelas</p>
+                                <p><i class="fas fa-check-circle mr-2"></i>Guru Mapel</p>
+                                <p><i class="fas fa-check-circle mr-2"></i>Kesiswaan</p>
+                                <p><i class="fas fa-check-circle mr-2"></i>Bimbingan Konseling</p>
+                                <p><i class="fas fa-check-circle mr-2"></i>Teknisi Lab</p>
+                                <p><i class="fas fa-check-circle mr-2"></i>Siswa</p>
                             </div>
                         </div>
                     </div>
@@ -550,38 +451,23 @@
         </div>
     </footer>
 
-    <!-- Scripts -->
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script>
-        // Initialize AOS Animation
-        AOS.init({
-            duration: 800,
-            once: true,
-            offset: 100,
-            easing: 'ease-in-out'
-        });
+        AOS.init({ duration: 800, once: true, offset: 100, easing: 'ease-in-out' });
 
-        // Add blob animation keyframes
         const style = document.createElement('style');
         style.textContent = `
             @keyframes blob {
-                0% { transform: translate(0px, 0px) scale(1); }
-                33% { transform: translate(30px, -50px) scale(1.1); }
-                66% { transform: translate(-20px, 20px) scale(0.9); }
+                0%   { transform: translate(0px, 0px) scale(1); }
+                33%  { transform: translate(30px, -50px) scale(1.1); }
+                66%  { transform: translate(-20px, 20px) scale(0.9); }
                 100% { transform: translate(0px, 0px) scale(1); }
             }
-            .animate-blob {
-                animation: blob 7s infinite;
-            }
-            .animation-delay-2000 {
-                animation-delay: 2s;
-            }
-            .animation-delay-4000 {
-                animation-delay: 4s;
-            }
+            .animate-blob { animation: blob 7s infinite; }
+            .animation-delay-2000 { animation-delay: 2s; }
+            .animation-delay-4000 { animation-delay: 4s; }
         `;
         document.head.appendChild(style);
     </script>
 </body>
-
 </html>

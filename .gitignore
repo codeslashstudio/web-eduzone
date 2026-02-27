@@ -49,19 +49,19 @@ Vagrantfile
 # Temporary Files
 #-------------------------
 writable/cache/*
-!writable/cache/index.html
+!writable/cache/.gitkeep
 
 writable/logs/*
-!writable/logs/index.html
+!writable/logs/.gitkeep
 
 writable/session/*
-!writable/session/index.html
+!writable/session/.gitkeep
 
 writable/uploads/*
-!writable/uploads/index.html
+!writable/uploads/.gitkeep
 
 writable/debugbar/*
-!writable/debugbar/index.html
+!writable/debugbar/.gitkeep
 
 php_errors.log
 
@@ -126,6 +126,19 @@ _modules/*
 /phpunit*.xml
 
 /vendor/
-/writable/
 /.env
 /public/uploads/
+
+#-------------------------
+# Node.js / NPM
+#-------------------------
+node_modules/
+package-lock.json
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+#-------------------------
+# Zip Files
+#-------------------------
+*.zip
