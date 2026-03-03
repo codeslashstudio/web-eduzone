@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Models\AbsensiModel;
+use App\Models\ClassModel;
 
 class Dashboard extends BaseController
 {
@@ -172,8 +173,8 @@ class Dashboard extends BaseController
         ", [$teacherId])->getResultArray() : [];
 
         $absensiStat = $teacherId ? $this->db->query("
-            SELECT SUM(status='Hadir') AS hadir, SUM(status='Sakit') AS sakit,
-                   SUM(status='Izin') AS izin, SUM(status='Alpa') AS alpa, COUNT(*) AS total
+            SELECT SUM(CASE WHEN status='Hadir' THEN 1 ELSE 0 END) AS hadir, SUM(CASE WHEN status='Sakit' THEN 1 ELSE 0 END) AS sakit,
+                   SUM(CASE WHEN status='Izin' THEN 1 ELSE 0 END) AS izin, SUM(CASE WHEN status='Alpa' THEN 1 ELSE 0 END) AS alpa, COUNT(*) AS total
             FROM teacher_attendance WHERE teacher_id=? AND MONTH(date)=? AND YEAR(date)=?
         ", [$teacherId, $bulan, $tahun])->getRowArray() : [];
 
@@ -222,6 +223,7 @@ class Dashboard extends BaseController
         }
 
         $absensiModel = new AbsensiModel();
+        $classModel   = new ClassModel();
         $userId  = session()->get('user_id');
         $bulan   = date('m');
         $tahun   = date('Y');
@@ -229,61 +231,33 @@ class Dashboard extends BaseController
                     'Thursday'=>'Kamis','Friday'=>'Jumat','Saturday'=>'Sabtu'];
         $hariIni = $dayMap[date('l')] ?? 'Senin';
 
-        // Ambil teacher_id dari user_id
-        $teacher = $this->db->table('teachers')->where('user_id', $userId)->get()->getRowArray();
+        // Ambil teacher dari user_id
+        $teacher   = $this->db->table('teachers')->where('user_id', $userId)->get()->getRowArray();
         $teacherId = $teacher['id'] ?? null;
 
-        // Ambil kelas yang diajar guru ini dari schedules (kelas pertama = kelas wali)
-        $kelasFromSchedule = $teacherId ? $this->db->query("
-            SELECT sc.grade, sc.major AS major_abbr, sc.class_group,
-                   m.id AS major_id, m.abbreviation AS major_name,
-                   CONCAT(sc.grade,' ',m.abbreviation,' ',sc.class_group) AS nama_kelas,
-                   COUNT(DISTINCT s.id) AS jumlah_siswa
-            FROM schedules sc
-            JOIN majors m ON m.abbreviation = sc.major
-            LEFT JOIN students s ON s.grade=sc.grade AND s.major_id=m.id
-                AND s.class_group=sc.class_group AND s.status='aktif'
-            WHERE sc.teacher_id = ? AND sc.is_active = 1
-            GROUP BY sc.grade, sc.major, sc.class_group
-            ORDER BY jumlah_siswa DESC
-            LIMIT 1
-        ", [$teacherId])->getRowArray() : [];
+        // Ambil kelas via ClassModel (pakai homeroom_assignments → classes)
+        $kelasSaya = $teacherId
+            ? $classModel->getByTeacher($teacherId)
+            : [];
 
-        // Fallback: jika tidak ada di schedules, ambil kelas pertama yang ada siswa aktif
-        $kelasSaya = !empty($kelasFromSchedule) ? $kelasFromSchedule : $this->db->query("
-            SELECT s.grade, s.major_id, s.class_group,
-                   m.abbreviation AS major_name,
-                   CONCAT(s.grade,' ',m.abbreviation,' ',s.class_group) AS nama_kelas,
-                   COUNT(s.id) AS jumlah_siswa
-            FROM students s JOIN majors m ON s.major_id=m.id
-            WHERE s.status='aktif'
-            GROUP BY s.grade, s.major_id, s.class_group
-            ORDER BY s.grade, m.abbreviation, s.class_group
-            LIMIT 1
-        ")->getRowArray();
+        // Fallback jika belum di-assign: ambil kelas pertama yang ada
+        if (empty($kelasSaya)) {
+            $allKelas  = $classModel->getAll();
+            $kelasSaya = $allKelas[0] ?? [];
+        }
 
+        $classId     = $kelasSaya['id']         ?? null;
         $grade       = $kelasSaya['grade']       ?? null;
         $major_id    = $kelasSaya['major_id']    ?? null;
         $class_group = $kelasSaya['class_group'] ?? null;
-        // major_abbr bisa dari schedules query (major_name) atau fallback
-        $majorAbbr   = $kelasSaya['major_name']  ?? $kelasSaya['major_abbr'] ?? '';
+        $majorAbbr   = $kelasSaya['major_abbr']  ?? '';
 
-        $statistikAbsensi = $absensiModel->getStatistikKehadiran($grade, $major_id, $class_group, $bulan, $tahun);
-        $absensiHariIni   = ($grade && $major_id && $class_group)
-            ? $absensiModel->getAbsensiHarian(date('Y-m-d'), $grade, $major_id, $class_group) : [];
-        $daftarSiswa      = ($grade && $major_id && $class_group)
-            ? $absensiModel->getRekapBulanan($grade, $major_id, $class_group, $bulan, $tahun) : [];
-        $siswaBermasalah  = $absensiModel->getSiswaAlpaTerbanyak($grade, $major_id, $bulan, $tahun, 5);
-
-        $jadwalHariIni = [];
-        if ($grade && $majorAbbr && $class_group) {
-            $jadwalHariIni = $this->db->query("
-                SELECT sc.*, t.full_name AS nama_guru FROM schedules sc
-                LEFT JOIN teachers t ON sc.teacher_id=t.id
-                WHERE sc.grade=? AND sc.major=? AND sc.class_group=? AND sc.day=? AND sc.is_active=1
-                ORDER BY sc.start_time ASC
-            ", [$grade, $majorAbbr, $class_group, $hariIni])->getResultArray();
-        }
+        // Semua data pakai class_id (method baru)
+        $statistikAbsensi = $classId ? $absensiModel->getStatistikKehadiranByClassId($classId, $bulan, $tahun) : [];
+        $absensiHariIni   = $classId ? $absensiModel->getAbsensiHarianByClassId(date('Y-m-d'), $classId) : [];
+        $daftarSiswa      = $classId ? $absensiModel->getRekapBulananByClassId($classId, $bulan, $tahun) : [];
+        $siswaBermasalah  = $classId ? $absensiModel->getSiswaAlpaTerbanyakByClassId($classId, $bulan, $tahun, 5) : [];
+        $jadwalHariIni    = $classId ? $classModel->getJadwal($classId, $hariIni) : [];
 
         $data = array_merge($this->getUserData(), [
             'title'            => 'Dashboard Wali Kelas',
@@ -311,17 +285,19 @@ class Dashboard extends BaseController
 
         $siswaStats = $this->db->query("
             SELECT COUNT(*) AS total,
-                SUM(status='aktif') AS aktif, SUM(status='lulus') AS lulus,
-                SUM(gender='L') AS laki, SUM(gender='P') AS perempuan
+                SUM(CASE WHEN status='aktif' THEN 1 ELSE 0 END) AS aktif, SUM(CASE WHEN status='lulus' THEN 1 ELSE 0 END) AS lulus,
+                SUM(CASE WHEN gender='L' THEN 1 ELSE 0 END) AS laki, SUM(CASE WHEN gender='P' THEN 1 ELSE 0 END) AS perempuan
             FROM students
         ")->getRowArray();
 
         $siswaPerKelas = $this->db->query("
-            SELECT CONCAT(s.grade,' ',m.abbreviation,' ',s.class_group) AS nama_kelas,
-                   s.grade, s.major_id, s.class_group, COUNT(s.id) AS jumlah_siswa
-            FROM students s JOIN majors m ON s.major_id=m.id
-            WHERE s.status='aktif'
-            GROUP BY s.grade, s.major_id, s.class_group ORDER BY s.grade, m.abbreviation, s.class_group
+            SELECT c.id AS class_id, c.nama_kelas, c.grade, c.major_id, c.class_group,
+                   m.abbreviation AS major_abbr, COUNT(s.id) AS jumlah_siswa
+            FROM classes c
+            JOIN majors m ON c.major_id = m.id
+            LEFT JOIN students s ON s.class_id = c.id AND s.status = 'aktif'
+            WHERE c.is_active = 1 AND c.academic_year = '2025/2026'
+            GROUP BY c.id ORDER BY c.grade, m.abbreviation, c.class_group
         ")->getResultArray();
 
         $prestasi = $this->db->query("
@@ -340,15 +316,19 @@ class Dashboard extends BaseController
         ", [$bulan, $tahun])->getRowArray();
 
         $rekapAbsensi = $this->db->query("
-            SELECT CONCAT(s.grade,' ',m.abbreviation,' ',s.class_group) AS nama_kelas,
+            SELECT c.id AS class_id, c.nama_kelas, c.grade, m.abbreviation AS major_abbr,
                 COUNT(DISTINCT s.id) AS jumlah_siswa,
-                SUM(sa.status='Hadir') AS hadir, SUM(sa.status='Sakit') AS sakit,
-                SUM(sa.status='Izin')  AS izin,  SUM(sa.status='Alpa')  AS alpa
-            FROM students s JOIN majors m ON s.major_id=m.id
-            LEFT JOIN student_attendance sa ON s.id=sa.student_id
+                SUM(CASE WHEN sa.status='Hadir' THEN 1 ELSE 0 END) AS hadir,
+                SUM(CASE WHEN sa.status='Sakit' THEN 1 ELSE 0 END) AS sakit,
+                SUM(CASE WHEN sa.status='Izin'  THEN 1 ELSE 0 END) AS izin,
+                SUM(CASE WHEN sa.status='Alpa'  THEN 1 ELSE 0 END) AS alpa
+            FROM classes c
+            JOIN majors m ON c.major_id = m.id
+            LEFT JOIN students s ON s.class_id = c.id AND s.status = 'aktif'
+            LEFT JOIN student_attendance sa ON s.id = sa.student_id
                 AND MONTH(sa.date)=? AND YEAR(sa.date)=?
-            WHERE s.status='aktif'
-            GROUP BY s.grade, s.major_id, s.class_group ORDER BY s.grade, m.abbreviation, s.class_group
+            WHERE c.is_active = 1 AND c.academic_year = '2025/2026'
+            GROUP BY c.id ORDER BY c.grade, m.abbreviation, c.class_group
         ", [$bulan, $tahun])->getResultArray();
 
         $data = array_merge($this->getUserData(), [
@@ -441,13 +421,13 @@ class Dashboard extends BaseController
 
         $invStat = $this->db->query("
             SELECT COUNT(*) AS total_item, SUM(quantity) AS total_unit,
-                SUM(condition='Baik') AS kondisi_baik,
-                SUM(condition='Rusak Ringan') AS rusak_ringan,
-                SUM(condition='Rusak Berat') AS rusak_berat
+                SUM(CASE WHEN `condition`='Baik' THEN 1 ELSE 0 END) AS kondisi_baik,
+                SUM(CASE WHEN `condition`='Rusak Ringan' THEN 1 ELSE 0 END) AS rusak_ringan,
+                SUM(CASE WHEN `condition`='Rusak Berat' THEN 1 ELSE 0 END) AS rusak_berat
             FROM inventory
         ")->getRowArray();
 
-        $inventaris     = $this->db->table('inventory')->orderBy('condition')->orderBy('item_name')->get()->getResultArray();
+        $inventaris     = $this->db->table('inventory')->orderBy('`condition`')->orderBy('item_name')->get()->getResultArray();
         $laporanTerbaru = $this->db->query("
             SELECT tr.*, st.full_name AS nama_staff FROM toolman_reports tr
             JOIN staff st ON tr.staff_id=st.id ORDER BY tr.date DESC LIMIT 7
@@ -457,11 +437,15 @@ class Dashboard extends BaseController
             LEFT JOIN teachers t ON lb.teacher_id=t.id WHERE lb.date=CURDATE() ORDER BY lb.start_time ASC
         ")->getResultArray();
         $labVisits      = $this->db->query("
-            SELECT lv.*, t.full_name AS nama_guru FROM lab_visits lv
-            LEFT JOIN teachers t ON lv.teacher_id=t.id ORDER BY lv.visit_date DESC LIMIT 5
+            SELECT lv.*, lb.lab_name, lb.purpose, lb.date AS visit_date,
+                   t.full_name AS nama_guru
+            FROM lab_visits lv
+            JOIN lab_bookings lb ON lv.lab_booking_id = lb.id
+            LEFT JOIN teachers t ON lb.teacher_id = t.id
+            ORDER BY lv.created_at DESC LIMIT 5
         ")->getResultArray();
         $itemRusak      = $this->db->query("
-            SELECT * FROM inventory WHERE condition!='Baik' ORDER BY condition DESC, item_name ASC
+            SELECT * FROM inventory WHERE `condition`!='Baik' ORDER BY `condition` DESC, item_name ASC
         ")->getResultArray();
 
         $data = array_merge($this->getUserData(), [
@@ -494,8 +478,12 @@ class Dashboard extends BaseController
         $hariIni = $dayMap[date('l')] ?? 'Senin';
 
         $siswa = $this->db->query("
-            SELECT s.*, m.abbreviation AS major_name, m.name AS major_full
-            FROM students s JOIN majors m ON s.major_id=m.id WHERE s.user_id=?
+            SELECT s.*, m.abbreviation AS major_name, m.name AS major_full,
+                   c.nama_kelas, c.id AS class_id
+            FROM students s
+            JOIN majors m ON s.major_id=m.id
+            LEFT JOIN classes c ON s.class_id = c.id
+            WHERE s.user_id=?
         ", [$userId])->getRowArray();
 
         $siswaId    = $siswa['id']          ?? null;
@@ -505,24 +493,27 @@ class Dashboard extends BaseController
         $majorAbbr  = $siswa['major_name']  ?? '';
 
         $absensiStat = $siswaId ? $this->db->query("
-            SELECT SUM(status='Hadir') AS hadir, SUM(status='Sakit') AS sakit,
-                   SUM(status='Izin') AS izin, SUM(status='Alpa') AS alpa, COUNT(*) AS total
+            SELECT SUM(CASE WHEN status='Hadir' THEN 1 ELSE 0 END) AS hadir, SUM(CASE WHEN status='Sakit' THEN 1 ELSE 0 END) AS sakit,
+                   SUM(CASE WHEN status='Izin' THEN 1 ELSE 0 END) AS izin, SUM(CASE WHEN status='Alpa' THEN 1 ELSE 0 END) AS alpa, COUNT(*) AS total
             FROM student_attendance WHERE student_id=? AND MONTH(date)=? AND YEAR(date)=?
         ", [$siswaId, $bulan, $tahun])->getRowArray() : [];
 
-        $jadwalHariIni = ($grade && $majorAbbr && $classGroup) ? $this->db->query("
-            SELECT sc.*, t.full_name AS nama_guru FROM schedules sc
-            LEFT JOIN teachers t ON sc.teacher_id=t.id
-            WHERE sc.grade=? AND sc.major=? AND sc.class_group=? AND sc.day=? AND sc.is_active=1
-            ORDER BY sc.start_time ASC
-        ", [$grade, $majorAbbr, $classGroup, $hariIni])->getResultArray() : [];
+        // Jadwal pakai class_id (dari tabel classes via students.class_id)
+        $classId = $siswa['class_id'] ?? null;
 
-        $jadwalMinggu = ($grade && $majorAbbr && $classGroup) ? $this->db->query("
+        $jadwalHariIni = $classId ? $this->db->query("
             SELECT sc.*, t.full_name AS nama_guru FROM schedules sc
             LEFT JOIN teachers t ON sc.teacher_id=t.id
-            WHERE sc.grade=? AND sc.major=? AND sc.class_group=? AND sc.is_active=1
+            WHERE sc.class_id=? AND sc.day=? AND sc.is_active=1
+            ORDER BY sc.start_time ASC
+        ", [$classId, $hariIni])->getResultArray() : [];
+
+        $jadwalMinggu = $classId ? $this->db->query("
+            SELECT sc.*, t.full_name AS nama_guru FROM schedules sc
+            LEFT JOIN teachers t ON sc.teacher_id=t.id
+            WHERE sc.class_id=? AND sc.is_active=1
             ORDER BY FIELD(sc.day,'Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'), sc.start_time
-        ", [$grade, $majorAbbr, $classGroup])->getResultArray() : [];
+        ", [$classId])->getResultArray() : [];
 
         $absensiTerbaru = $siswaId ? $this->db->query("
             SELECT * FROM student_attendance WHERE student_id=? ORDER BY date DESC LIMIT 10

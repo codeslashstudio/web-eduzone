@@ -17,42 +17,37 @@
             --bg-secondary: #111118;
             --bg-card: #16161e;
             --bg-card-hover: #1c1c28;
-            --border: rgba(255, 255, 255, 0.08);
-            --border-hover: rgba(255, 255, 255, 0.18);
+            --border: rgba(255,255,255,0.08);
+            --border-hover: rgba(255,255,255,0.18);
             --text-primary: #f0f0ff;
             --text-secondary: #8888aa;
             --text-muted: #55556a;
             --accent: #6c63ff;
-            --accent-glow: rgba(108, 99, 255, 0.3);
+            --accent-glow: rgba(108,99,255,0.3);
             --accent-2: #ff6584;
             --accent-3: #43e97b;
-            --nav-bg: rgba(10, 10, 15, 0.85);
-            --card-shadow: 0 4px 40px rgba(0, 0, 0, 0.4);
+            --nav-bg: rgba(10,10,15,0.85);
+            --card-shadow: 0 4px 40px rgba(0,0,0,0.4);
         }
-
         [data-theme="light"] {
             --bg-primary: #f7f7fc;
             --bg-secondary: #ededf8;
             --bg-card: #ffffff;
             --bg-card-hover: #f0f0fc;
-            --border: rgba(0, 0, 0, 0.07);
-            --border-hover: rgba(108, 99, 255, 0.3);
+            --border: rgba(0,0,0,0.07);
+            --border-hover: rgba(108,99,255,0.3);
             --text-primary: #0f0f1a;
             --text-secondary: #5a5a7a;
             --text-muted: #9898b0;
             --accent: #5b54e8;
-            --accent-glow: rgba(91, 84, 232, 0.18);
+            --accent-glow: rgba(91,84,232,0.18);
             --accent-2: #e84393;
             --accent-3: #1db954;
-            --nav-bg: rgba(247, 247, 252, 0.88);
-            --card-shadow: 0 4px 32px rgba(91, 84, 232, 0.08);
+            --nav-bg: rgba(247,247,252,0.88);
+            --card-shadow: 0 4px 32px rgba(91,84,232,0.08);
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -62,11 +57,7 @@
             overflow-x: hidden;
         }
 
-        h1,
-        h2,
-        h3,
-        h4,
-        h5 {
+        h1, h2, h3, h4, h5 {
             font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
         }
 
@@ -82,18 +73,9 @@
         }
 
         /* Scrollbar */
-        ::-webkit-scrollbar {
-            width: 4px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: var(--bg-primary);
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: var(--accent);
-            border-radius: 2px;
-        }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: var(--bg-primary); }
+        ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 2px; }
 
         /* Navbar */
         nav {
@@ -116,7 +98,6 @@
             transition: color 0.2s;
             position: relative;
         }
-
         .nav-link::after {
             content: '';
             position: absolute;
@@ -127,14 +108,8 @@
             background: var(--accent);
             transition: width 0.3s ease;
         }
-
-        .nav-link:hover {
-            color: var(--text-primary);
-        }
-
-        .nav-link:hover::after {
-            width: 100%;
-        }
+        .nav-link:hover { color: var(--text-primary); }
+        .nav-link:hover::after { width: 100%; }
 
         .btn-primary {
             background: var(--accent);
@@ -143,7 +118,7 @@
             border-radius: 8px;
             font-size: 0.875rem;
             font-weight: 600;
-            font-family: 'Outfit', sans-serif;
+            font-family:'Outfit',sans-serif;
             letter-spacing: 0.01em;
             transition: all 0.25s ease;
             box-shadow: 0 0 0 0 var(--accent-glow);
@@ -153,7 +128,6 @@
             align-items: center;
             gap: 0.4rem;
         }
-
         .btn-primary:hover {
             transform: translateY(-1px);
             box-shadow: 0 8px 28px var(--accent-glow);
@@ -168,14 +142,13 @@
             border-radius: 8px;
             font-size: 0.875rem;
             font-weight: 500;
-            font-family: 'Outfit', sans-serif;
+            font-family:'Outfit',sans-serif;
             transition: all 0.25s ease;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
         }
-
         .btn-ghost:hover {
             background: var(--bg-card-hover);
             border-color: var(--border-hover);
@@ -196,7 +169,6 @@
             color: var(--text-secondary);
             font-size: 0.95rem;
         }
-
         .theme-toggle:hover {
             background: var(--bg-card-hover);
             border-color: var(--border-hover);
@@ -238,17 +210,8 @@
         }
 
         @keyframes pulse-glow {
-
-            0%,
-            100% {
-                opacity: 0.6;
-                transform: translate(-50%, -50%) scale(1);
-            }
-
-            50% {
-                opacity: 1;
-                transform: translate(-50%, -50%) scale(1.1);
-            }
+            0%, 100% { opacity: 0.6; transform: translate(-50%, -50%) scale(1); }
+            50% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
         }
 
         .badge-pill {
@@ -264,25 +227,15 @@
             font-weight: 500;
             margin-bottom: 1.5rem;
         }
-
         .badge-pill .dot {
-            width: 6px;
-            height: 6px;
+            width: 6px; height: 6px;
             border-radius: 50%;
             background: var(--accent-3);
             animation: blink 2s ease-in-out infinite;
         }
-
         @keyframes blink {
-
-            0%,
-            100% {
-                opacity: 1;
-            }
-
-            50% {
-                opacity: 0.3;
-            }
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
         }
 
         .hero-title {
@@ -292,7 +245,6 @@
             letter-spacing: -0.03em;
             color: var(--text-primary);
         }
-
         .hero-title .accent-text {
             background: linear-gradient(135deg, var(--accent) 0%, #a78bfa 60%, var(--accent-2) 100%);
             -webkit-background-clip: text;
@@ -307,21 +259,18 @@
             padding: 1.25rem 1.5rem;
             transition: all 0.3s ease;
         }
-
         .stat-card:hover {
             border-color: var(--border-hover);
             background: var(--bg-card-hover);
             transform: translateY(-2px);
         }
-
         .stat-number {
-            font-family: 'Outfit', sans-serif;
+            font-family:'Outfit',sans-serif;
             font-size: 2rem;
             font-weight: 800;
             color: var(--text-primary);
             line-height: 1;
         }
-
         .stat-label {
             font-size: 0.75rem;
             color: var(--text-muted);
@@ -334,7 +283,6 @@
         .hero-visual {
             position: relative;
         }
-
         .ui-card {
             background: var(--bg-card);
             border: 1px solid var(--border);
@@ -343,7 +291,6 @@
             box-shadow: var(--card-shadow);
             transition: border-color 0.3s;
         }
-
         .ui-card-floating {
             position: absolute;
             background: var(--bg-card);
@@ -367,7 +314,6 @@
             color: var(--accent);
             margin-bottom: 1rem;
         }
-
         .section-label::before {
             content: '';
             width: 20px;
@@ -394,29 +340,22 @@
             overflow: hidden;
             cursor: default;
         }
-
         .feature-card::before {
             content: '';
             position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
+            top: 0; left: 0; right: 0;
             height: 1px;
             background: linear-gradient(90deg, transparent, var(--accent), transparent);
             opacity: 0;
             transition: opacity 0.3s;
         }
-
         .feature-card:hover {
             border-color: var(--border-hover);
             background: var(--bg-card-hover);
             transform: translateY(-4px);
-            box-shadow: 0 20px 60px rgba(108, 99, 255, 0.1);
+            box-shadow: 0 20px 60px rgba(108,99,255,0.1);
         }
-
-        .feature-card:hover::before {
-            opacity: 1;
-        }
+        .feature-card:hover::before { opacity: 1; }
 
         .icon-box {
             width: 48px;
@@ -437,7 +376,6 @@
             padding: 2rem;
             transition: all 0.3s ease;
         }
-
         .testimonial-card:hover {
             border-color: var(--border-hover);
             transform: translateY(-3px);
@@ -453,12 +391,10 @@
             transition: all 0.35s ease;
             position: relative;
         }
-
         .pricing-card.popular {
             background: var(--accent);
             border-color: var(--accent);
         }
-
         .pricing-card:not(.popular):hover {
             border-color: var(--accent);
             transform: translateY(-4px);
@@ -477,28 +413,17 @@
             overflow: hidden;
             position: relative;
         }
-
         .marquee-track {
             display: flex;
             gap: 2rem;
             animation: marquee 25s linear infinite;
             width: max-content;
         }
-
-        .marquee-wrapper:hover .marquee-track {
-            animation-play-state: paused;
-        }
-
+        .marquee-wrapper:hover .marquee-track { animation-play-state: paused; }
         @keyframes marquee {
-            0% {
-                transform: translateX(0);
-            }
-
-            100% {
-                transform: translateX(-50%);
-            }
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
         }
-
         .marquee-item {
             background: var(--bg-card);
             border: 1px solid var(--border);
@@ -521,19 +446,13 @@
             padding: 0.85rem 1.2rem;
             color: var(--text-primary);
             font-size: 0.9rem;
-            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-family:'Plus Jakarta Sans',sans-serif;
             width: 100%;
             transition: border-color 0.2s;
             outline: none;
         }
-
-        .newsletter-input:focus {
-            border-color: var(--accent);
-        }
-
-        .newsletter-input::placeholder {
-            color: var(--text-muted);
-        }
+        .newsletter-input:focus { border-color: var(--accent); }
+        .newsletter-input::placeholder { color: var(--text-muted); }
 
         /* Footer */
         footer {
@@ -547,27 +466,14 @@
             transform: translateY(24px);
             transition: opacity 0.7s ease, transform 0.7s ease;
         }
-
         .reveal.visible {
             opacity: 1;
             transform: translateY(0);
         }
-
-        .reveal-delay-1 {
-            transition-delay: 0.1s;
-        }
-
-        .reveal-delay-2 {
-            transition-delay: 0.2s;
-        }
-
-        .reveal-delay-3 {
-            transition-delay: 0.3s;
-        }
-
-        .reveal-delay-4 {
-            transition-delay: 0.4s;
-        }
+        .reveal-delay-1 { transition-delay: 0.1s; }
+        .reveal-delay-2 { transition-delay: 0.2s; }
+        .reveal-delay-3 { transition-delay: 0.3s; }
+        .reveal-delay-4 { transition-delay: 0.4s; }
 
         /* Mobile menu */
         #mobile-menu {
@@ -576,13 +482,9 @@
         }
 
         /* Avatar group */
-        .avatar-group {
-            display: flex;
-        }
-
+        .avatar-group { display: flex; }
         .avatar-group .avatar {
-            width: 32px;
-            height: 32px;
+            width: 32px; height: 32px;
             border-radius: 50%;
             border: 2px solid var(--bg-primary);
             margin-left: -8px;
@@ -593,15 +495,11 @@
             justify-content: center;
             color: white;
         }
-
-        .avatar-group .avatar:first-child {
-            margin-left: 0;
-        }
+        .avatar-group .avatar:first-child { margin-left: 0; }
 
         /* Glow dot decorations */
         .glow-dot {
-            width: 8px;
-            height: 8px;
+            width: 8px; height: 8px;
             border-radius: 50%;
             background: var(--accent);
             box-shadow: 0 0 12px var(--accent);
@@ -614,18 +512,14 @@
             background: var(--border);
             overflow: hidden;
         }
-
         .progress-fill {
             height: 100%;
             border-radius: 2px;
             background: linear-gradient(90deg, var(--accent), #a78bfa);
             animation: fill 2s ease forwards;
         }
-
         @keyframes fill {
-            from {
-                width: 0;
-            }
+            from { width: 0; }
         }
     </style>
 </head>
@@ -778,27 +672,21 @@
                                         <span style="font-size:0.78rem; color:var(--text-secondary);">Matematika</span>
                                         <span style="font-size:0.78rem; color:var(--accent); font-weight:600;">87%</span>
                                     </div>
-                                    <div class="progress-bar">
-                                        <div class="progress-fill" style="width:87%;"></div>
-                                    </div>
+                                    <div class="progress-bar"><div class="progress-fill" style="width:87%;"></div></div>
                                 </div>
                                 <div>
                                     <div style="display:flex; justify-content:space-between; margin-bottom:0.4rem;">
                                         <span style="font-size:0.78rem; color:var(--text-secondary);">Bahasa Indonesia</span>
                                         <span style="font-size:0.78rem; color:var(--accent); font-weight:600;">92%</span>
                                     </div>
-                                    <div class="progress-bar">
-                                        <div class="progress-fill" style="width:92%;"></div>
-                                    </div>
+                                    <div class="progress-bar"><div class="progress-fill" style="width:92%;"></div></div>
                                 </div>
                                 <div>
                                     <div style="display:flex; justify-content:space-between; margin-bottom:0.4rem;">
                                         <span style="font-size:0.78rem; color:var(--text-secondary);">IPA</span>
                                         <span style="font-size:0.78rem; color:var(--accent); font-weight:600;">78%</span>
                                     </div>
-                                    <div class="progress-bar">
-                                        <div class="progress-fill" style="width:78%;"></div>
-                                    </div>
+                                    <div class="progress-bar"><div class="progress-fill" style="width:78%;"></div></div>
                                 </div>
                             </div>
                         </div>
@@ -851,12 +739,11 @@
     <div style="background:var(--bg-secondary); border-top:1px solid var(--border); border-bottom:1px solid var(--border); padding:1rem 0; overflow:hidden;">
         <div class="marquee-wrapper">
             <div class="marquee-track">
-                <?php $items = ['Absensi Digital', 'Rapor Online', 'Manajemen Kelas', 'Analitik Real-time', 'Notifikasi Orang Tua', 'Jadwal Otomatis', 'BK Terintegrasi', 'E-Learning', 'Pembayaran SPP', 'Multi Role Access', 'Data Aman & Terenkripsi', 'Laporan Cepat'];
-                foreach (array_merge($items, $items, $items) as $item): ?>
-                    <div class="marquee-item">
-                        <i class="fas fa-check" style="color:var(--accent); font-size:0.7rem;"></i>
-                        <?= $item ?>
-                    </div>
+                <?php $items = ['Absensi Digital','Rapor Online','Manajemen Kelas','Analitik Real-time','Notifikasi Orang Tua','Jadwal Otomatis','BK Terintegrasi','E-Learning','Pembayaran SPP','Multi Role Access','Data Aman & Terenkripsi','Laporan Cepat']; foreach(array_merge($items,$items,$items) as $item): ?>
+                <div class="marquee-item">
+                    <i class="fas fa-check" style="color:var(--accent); font-size:0.7rem;"></i>
+                    <?= $item ?>
+                </div>
                 <?php endforeach; ?>
             </div>
         </div>
@@ -963,20 +850,20 @@
                     <div style="display:flex; flex-direction:column; gap:1rem;">
                         <?php
                         $points = [
-                            ['icon' => 'fa-check', 'color' => 'var(--accent-3)', 'title' => 'Implementasi dalam 1 hari', 'desc' => 'Onboarding cepat dengan panduan migrasi data lengkap'],
-                            ['icon' => 'fa-check', 'color' => 'var(--accent-3)', 'title' => 'Tidak perlu pelatihan teknis', 'desc' => 'Interface intuitif yang bisa langsung digunakan oleh semua staf'],
-                            ['icon' => 'fa-check', 'color' => 'var(--accent-3)', 'title' => 'Kustomisasi penuh', 'desc' => 'Sesuaikan alur kerja, template, dan laporan dengan kebutuhan sekolah'],
+                            ['icon'=>'fa-check','color'=>'var(--accent-3)','title'=>'Implementasi dalam 1 hari','desc'=>'Onboarding cepat dengan panduan migrasi data lengkap'],
+                            ['icon'=>'fa-check','color'=>'var(--accent-3)','title'=>'Tidak perlu pelatihan teknis','desc'=>'Interface intuitif yang bisa langsung digunakan oleh semua staf'],
+                            ['icon'=>'fa-check','color'=>'var(--accent-3)','title'=>'Kustomisasi penuh','desc'=>'Sesuaikan alur kerja, template, dan laporan dengan kebutuhan sekolah'],
                         ];
-                        foreach ($points as $p): ?>
-                            <div style="display:flex; gap:0.9rem; align-items:flex-start;">
-                                <div style="width:24px; height:24px; border-radius:50%; background:rgba(67,233,123,0.15); display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:2px;">
-                                    <i class="fas <?= $p['icon'] ?>" style="color:<?= $p['color'] ?>; font-size:0.65rem;"></i>
-                                </div>
-                                <div>
-                                    <div style="font-family:'Outfit',sans-serif; font-weight:600; font-size:0.9rem; color:var(--text-primary); margin-bottom:2px;"><?= $p['title'] ?></div>
-                                    <div style="font-size:0.83rem; color:var(--text-secondary);"><?= $p['desc'] ?></div>
-                                </div>
+                        foreach($points as $p): ?>
+                        <div style="display:flex; gap:0.9rem; align-items:flex-start;">
+                            <div style="width:24px; height:24px; border-radius:50%; background:rgba(67,233,123,0.15); display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:2px;">
+                                <i class="fas <?= $p['icon'] ?>" style="color:<?= $p['color'] ?>; font-size:0.65rem;"></i>
                             </div>
+                            <div>
+                                <div style="font-family:'Outfit',sans-serif; font-weight:600; font-size:0.9rem; color:var(--text-primary); margin-bottom:2px;"><?= $p['title'] ?></div>
+                                <div style="font-size:0.83rem; color:var(--text-secondary);"><?= $p['desc'] ?></div>
+                            </div>
+                        </div>
                         <?php endforeach; ?>
                     </div>
 
@@ -1010,7 +897,7 @@
                                 <div style="font-size:0.78rem; color:var(--text-muted);">CEO, EduZone</div>
                             </div>
                             <div style="margin-left:auto; display:flex; gap:2px;">
-                                <?php for ($i = 0; $i < 5; $i++): ?><i class="fas fa-star" style="color:#f7a440; font-size:0.75rem;"></i><?php endfor; ?>
+                                <?php for($i=0;$i<5;$i++): ?><i class="fas fa-star" style="color:#f7a440; font-size:0.75rem;"></i><?php endfor; ?>
                             </div>
                         </div>
                     </div>
@@ -1045,26 +932,26 @@
             <div class="grid md:grid-cols-3 gap-5">
                 <?php
                 $testimonials = [
-                    ['init' => 'DM', 'name' => 'David Martino', 'role' => 'Kepala Sekolah SMA N 1', 'color' => '#6c63ff', 'text' => 'Interface yang intuitif membuat seluruh guru langsung bisa menggunakan tanpa pelatihan panjang. Sistem absensi digitalnya luar biasa akurat.', 'delay' => 'reveal-delay-1'],
-                    ['init' => 'JT', 'name' => 'Joko Tomonyo', 'role' => 'Koordinator IT Sekolah', 'color' => '#43e97b', 'text' => 'Integrasi dengan Dapodik berjalan mulus. Tim developer-nya responsif dan update fitur terus mengalir. Platform terbaik yang pernah kami gunakan.', 'delay' => 'reveal-delay-2'],
-                    ['init' => 'AS', 'name' => 'Muhammad Alif S.', 'role' => 'Wali Murid & Pengusaha', 'color' => '#ff6584', 'text' => 'Sebagai orang tua, saya bisa pantau perkembangan anak secara real-time. Notifikasi langsung ke HP saya kalau ada pengumuman penting.', 'delay' => 'reveal-delay-3'],
+                    ['init'=>'DM','name'=>'David Martino','role'=>'Kepala Sekolah SMA N 1','color'=>'#6c63ff','text'=>'Interface yang intuitif membuat seluruh guru langsung bisa menggunakan tanpa pelatihan panjang. Sistem absensi digitalnya luar biasa akurat.','delay'=>'reveal-delay-1'],
+                    ['init'=>'JT','name'=>'Joko Tomonyo','role'=>'Koordinator IT Sekolah','color'=>'#43e97b','text'=>'Integrasi dengan Dapodik berjalan mulus. Tim developer-nya responsif dan update fitur terus mengalir. Platform terbaik yang pernah kami gunakan.','delay'=>'reveal-delay-2'],
+                    ['init'=>'AS','name'=>'Muhammad Alif S.','role'=>'Wali Murid & Pengusaha','color'=>'#ff6584','text'=>'Sebagai orang tua, saya bisa pantau perkembangan anak secara real-time. Notifikasi langsung ke HP saya kalau ada pengumuman penting.','delay'=>'reveal-delay-3'],
                 ];
-                foreach ($testimonials as $t): ?>
-                    <div class="testimonial-card reveal <?= $t['delay'] ?>">
-                        <div style="display:flex; gap:1px; margin-bottom:1.25rem;">
-                            <?php for ($i = 0; $i < 5; $i++): ?><i class="fas fa-star" style="color:#f7a440; font-size:0.8rem;"></i><?php endfor; ?>
+                foreach($testimonials as $t): ?>
+                <div class="testimonial-card reveal <?= $t['delay'] ?>">
+                    <div style="display:flex; gap:1px; margin-bottom:1.25rem;">
+                        <?php for($i=0;$i<5;$i++): ?><i class="fas fa-star" style="color:#f7a440; font-size:0.8rem;"></i><?php endfor; ?>
+                    </div>
+                    <p style="color:var(--text-secondary); font-size:0.88rem; line-height:1.7; margin-bottom:1.5rem; font-style:italic;">"<?= $t['text'] ?>"</p>
+                    <div style="display:flex; align-items:center; gap:0.75rem; padding-top:1.25rem; border-top:1px solid var(--border);">
+                        <div style="width:38px; height:38px; border-radius:50%; background:<?= $t['color'] ?>22; border:1px solid <?= $t['color'] ?>44; display:flex; align-items:center; justify-content:center; font-family:'Outfit',sans-serif; font-weight:800; font-size:0.8rem; color:<?= $t['color'] ?>;">
+                            <?= $t['init'] ?>
                         </div>
-                        <p style="color:var(--text-secondary); font-size:0.88rem; line-height:1.7; margin-bottom:1.5rem; font-style:italic;">"<?= $t['text'] ?>"</p>
-                        <div style="display:flex; align-items:center; gap:0.75rem; padding-top:1.25rem; border-top:1px solid var(--border);">
-                            <div style="width:38px; height:38px; border-radius:50%; background:<?= $t['color'] ?>22; border:1px solid <?= $t['color'] ?>44; display:flex; align-items:center; justify-content:center; font-family:'Outfit',sans-serif; font-weight:800; font-size:0.8rem; color:<?= $t['color'] ?>;">
-                                <?= $t['init'] ?>
-                            </div>
-                            <div>
-                                <div style="font-family:'Outfit',sans-serif; font-weight:700; font-size:0.88rem; color:var(--text-primary);"><?= $t['name'] ?></div>
-                                <div style="font-size:0.75rem; color:var(--text-muted);"><?= $t['role'] ?></div>
-                            </div>
+                        <div>
+                            <div style="font-family:'Outfit',sans-serif; font-weight:700; font-size:0.88rem; color:var(--text-primary);"><?= $t['name'] ?></div>
+                            <div style="font-size:0.75rem; color:var(--text-muted);"><?= $t['role'] ?></div>
                         </div>
                     </div>
+                </div>
                 <?php endforeach; ?>
             </div>
         </div>
@@ -1091,10 +978,10 @@
                     </div>
                     <p style="font-size:0.83rem; color:var(--text-secondary); margin-bottom:2rem; line-height:1.6;">Untuk sekolah kecil hingga 500 siswa</p>
                     <div style="display:flex; flex-direction:column; gap:0.85rem; margin-bottom:2.5rem;">
-                        <?php foreach (['50 GB Storage', 'Maks 500 Siswa', 'Laporan Dasar', 'Support Email', 'Update Gratis'] as $f): ?>
-                            <div style="display:flex; gap:0.7rem; align-items:center; font-size:0.85rem; color:var(--text-secondary);">
-                                <i class="fas fa-check" style="color:var(--accent-3); font-size:0.7rem; flex-shrink:0;"></i> <?= $f ?>
-                            </div>
+                        <?php foreach(['50 GB Storage','Maks 500 Siswa','Laporan Dasar','Support Email','Update Gratis'] as $f): ?>
+                        <div style="display:flex; gap:0.7rem; align-items:center; font-size:0.85rem; color:var(--text-secondary);">
+                            <i class="fas fa-check" style="color:var(--accent-3); font-size:0.7rem; flex-shrink:0;"></i> <?= $f ?>
+                        </div>
                         <?php endforeach; ?>
                     </div>
                     <a href="<?= base_url('register') ?>" class="btn-ghost" style="width:100%; justify-content:center; text-decoration:none; padding:0.85rem;">Mulai Gratis</a>
@@ -1110,10 +997,10 @@
                     </div>
                     <p style="font-size:0.83rem; color:rgba(255,255,255,0.7); margin-bottom:2rem; line-height:1.6;">Untuk sekolah menengah hingga 2000 siswa</p>
                     <div style="display:flex; flex-direction:column; gap:0.85rem; margin-bottom:2.5rem;">
-                        <?php foreach (['100 GB Storage', 'Unlimited Siswa', 'Laporan Advanced', 'Support Prioritas 24/7', 'Integrasi Dapodik', 'Analitik AI'] as $f): ?>
-                            <div style="display:flex; gap:0.7rem; align-items:center; font-size:0.85rem; color:rgba(255,255,255,0.85);">
-                                <i class="fas fa-check" style="color:rgba(255,255,255,0.9); font-size:0.7rem; flex-shrink:0;"></i> <?= $f ?>
-                            </div>
+                        <?php foreach(['100 GB Storage','Unlimited Siswa','Laporan Advanced','Support Prioritas 24/7','Integrasi Dapodik','Analitik AI'] as $f): ?>
+                        <div style="display:flex; gap:0.7rem; align-items:center; font-size:0.85rem; color:rgba(255,255,255,0.85);">
+                            <i class="fas fa-check" style="color:rgba(255,255,255,0.9); font-size:0.7rem; flex-shrink:0;"></i> <?= $f ?>
+                        </div>
                         <?php endforeach; ?>
                     </div>
                     <button class="btn-primary" style="width:100%; justify-content:center; background:white; color:var(--accent); padding:0.85rem;">Mulai Sekarang</button>
@@ -1128,10 +1015,10 @@
                     </div>
                     <p style="font-size:0.83rem; color:var(--text-secondary); margin-bottom:2rem; line-height:1.6;">Untuk yayasan dan multi-sekolah</p>
                     <div style="display:flex; flex-direction:column; gap:0.85rem; margin-bottom:2.5rem;">
-                        <?php foreach (['Unlimited Storage', 'Multi-Sekolah', 'White Label', 'Dedicated Server', 'Custom Integrasi', 'SLA 99.9% Uptime'] as $f): ?>
-                            <div style="display:flex; gap:0.7rem; align-items:center; font-size:0.85rem; color:var(--text-secondary);">
-                                <i class="fas fa-check" style="color:var(--accent); font-size:0.7rem; flex-shrink:0;"></i> <?= $f ?>
-                            </div>
+                        <?php foreach(['Unlimited Storage','Multi-Sekolah','White Label','Dedicated Server','Custom Integrasi','SLA 99.9% Uptime'] as $f): ?>
+                        <div style="display:flex; gap:0.7rem; align-items:center; font-size:0.85rem; color:var(--text-secondary);">
+                            <i class="fas fa-check" style="color:var(--accent); font-size:0.7rem; flex-shrink:0;"></i> <?= $f ?>
+                        </div>
                         <?php endforeach; ?>
                     </div>
                     <a href="mailto:info@eduzone.com" class="btn-ghost" style="width:100%; justify-content:center; text-decoration:none; padding:0.85rem;">Hubungi Sales</a>
@@ -1184,12 +1071,12 @@
                     </div>
                     <p style="font-size:0.83rem; color:var(--text-secondary); line-height:1.7; margin-bottom:1.25rem;">Platform manajemen sekolah digital terpadu untuk Indonesia.</p>
                     <div style="display:flex; gap:0.5rem;">
-                        <?php foreach ([['fa-twitter', '#1da1f2'], ['fa-instagram', '#e1306c'], ['fa-linkedin-in', '#0a66c2']] as $s): ?>
-                            <a href="#" style="width:34px; height:34px; border-radius:8px; background:var(--bg-card); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; color:var(--text-secondary); font-size:0.8rem; text-decoration:none; transition:all 0.2s;"
-                                onmouseover="this.style.borderColor='<?= $s[1] ?>'; this.style.color='<?= $s[1] ?>';"
-                                onmouseout="this.style.borderColor='var(--border)'; this.style.color='var(--text-secondary)';">
-                                <i class="fab <?= $s[0] ?>"></i>
-                            </a>
+                        <?php foreach([['fa-twitter','#1da1f2'],['fa-instagram','#e1306c'],['fa-linkedin-in','#0a66c2']] as $s): ?>
+                        <a href="#" style="width:34px; height:34px; border-radius:8px; background:var(--bg-card); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; color:var(--text-secondary); font-size:0.8rem; text-decoration:none; transition:all 0.2s;"
+                           onmouseover="this.style.borderColor='<?= $s[1] ?>'; this.style.color='<?= $s[1] ?>';"
+                           onmouseout="this.style.borderColor='var(--border)'; this.style.color='var(--text-secondary)';">
+                            <i class="fab <?= $s[0] ?>"></i>
+                        </a>
                         <?php endforeach; ?>
                     </div>
                 </div>
@@ -1197,21 +1084,21 @@
                 <!-- Links -->
                 <?php
                 $footerLinks = [
-                    'Produk' => ['Fitur Lengkap', 'Integrasi', 'API Docs', 'Changelog'],
-                    'Perusahaan' => ['Tentang Kami', 'Karir', 'Blog', 'Press Kit'],
-                    'Dukungan' => ['Pusat Bantuan', 'Live Chat', 'Status Sistem', 'Kebijakan Privasi'],
+                    'Produk' => ['Fitur Lengkap','Integrasi','API Docs','Changelog'],
+                    'Perusahaan' => ['Tentang Kami','Karir','Blog','Press Kit'],
+                    'Dukungan' => ['Pusat Bantuan','Live Chat','Status Sistem','Kebijakan Privasi'],
                 ];
-                foreach ($footerLinks as $col => $links): ?>
-                    <div>
-                        <div style="font-family:'Outfit',sans-serif; font-weight:700; font-size:0.85rem; color:var(--text-primary); margin-bottom:1rem;"><?= $col ?></div>
-                        <div style="display:flex; flex-direction:column; gap:0.6rem;">
-                            <?php foreach ($links as $l): ?>
-                                <a href="#" style="font-size:0.83rem; color:var(--text-secondary); text-decoration:none; transition:color 0.2s;"
-                                    onmouseover="this.style.color='var(--text-primary)'"
-                                    onmouseout="this.style.color='var(--text-secondary)'"><?= $l ?></a>
-                            <?php endforeach; ?>
-                        </div>
+                foreach($footerLinks as $col => $links): ?>
+                <div>
+                    <div style="font-family:'Outfit',sans-serif; font-weight:700; font-size:0.85rem; color:var(--text-primary); margin-bottom:1rem;"><?= $col ?></div>
+                    <div style="display:flex; flex-direction:column; gap:0.6rem;">
+                        <?php foreach($links as $l): ?>
+                        <a href="#" style="font-size:0.83rem; color:var(--text-secondary); text-decoration:none; transition:color 0.2s;"
+                           onmouseover="this.style.color='var(--text-primary)'"
+                           onmouseout="this.style.color='var(--text-secondary)'"><?= $l ?></a>
+                        <?php endforeach; ?>
                     </div>
+                </div>
                 <?php endforeach; ?>
             </div>
 
@@ -1267,9 +1154,7 @@
                     observer.unobserve(e.target);
                 }
             });
-        }, {
-            threshold: 0.1
-        });
+        }, { threshold: 0.1 });
         document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
         // ── Navbar scroll shadow ──
@@ -1293,5 +1178,4 @@
         }
     </script>
 </body>
-
 </html>

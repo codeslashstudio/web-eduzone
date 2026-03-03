@@ -6,12 +6,23 @@ use CodeIgniter\Model;
 
 class AbsensiModel extends Model
 {
-    // ==========================================
+    // ============================================================
     // SISWA PER KELAS
-    // Untuk dropdown filter dan load daftar siswa
-    // ==========================================
+    // ============================================================
 
-    public function getSiswaByKelas($grade, $major_id, $class_group)
+    // Baru: pakai class_id
+    public function getSiswaByClassId(int $classId): array
+    {
+        return $this->db->table('students')
+            ->select('id, nis, full_name, gender')
+            ->where('class_id', $classId)
+            ->where('status', 'aktif')
+            ->orderBy('full_name', 'ASC')
+            ->get()->getResultArray();
+    }
+
+    // Legacy: masih dipakai selama transisi
+    public function getSiswaByKelas($grade, $major_id, $class_group): array
     {
         return $this->db->table('students')
             ->select('id, nis, full_name, gender')
@@ -23,56 +34,54 @@ class AbsensiModel extends Model
             ->get()->getResultArray();
     }
 
-    public function getKelasList()
+    // Baru: daftar kelas dari tabel classes
+    public function getKelasList(string $academicYear = '2025/2026'): array
     {
         return $this->db->query("
-            SELECT DISTINCT
-                s.grade,
-                s.major_id,
-                s.class_group,
-                m.abbreviation AS major_name,
-                CONCAT(s.grade, ' ', m.abbreviation, ' ', s.class_group) AS nama_kelas,
-                COUNT(s.id) AS jumlah_siswa
-            FROM students s
-            JOIN majors m ON s.major_id = m.id
-            WHERE s.status = 'aktif'
-            GROUP BY s.grade, s.major_id, s.class_group
-            ORDER BY s.grade ASC, m.abbreviation ASC, s.class_group ASC
-        ")->getResultArray();
+            SELECT c.id AS class_id, c.grade, c.major_id, c.class_group,
+                   c.nama_kelas, m.abbreviation AS major_name,
+                   COUNT(DISTINCT s.id) AS jumlah_siswa
+            FROM classes c
+            JOIN majors m ON c.major_id = m.id
+            LEFT JOIN students s ON s.class_id = c.id AND s.status = 'aktif'
+            WHERE c.academic_year = ? AND c.is_active = 1
+            GROUP BY c.id
+            ORDER BY c.grade ASC, m.abbreviation ASC, c.class_group ASC
+        ", [$academicYear])->getResultArray();
     }
 
-    // ==========================================
+    // ============================================================
     // ABSENSI HARIAN (student_attendance)
-    // Input oleh Wali Kelas
-    // ==========================================
+    // ============================================================
 
-    public function getAbsensiHarian($date, $grade, $major_id, $class_group)
+    // Baru: pakai class_id
+    public function getAbsensiHarianByClassId(string $date, int $classId): array
     {
         return $this->db->query("
-            SELECT
-                s.id AS student_id,
-                s.nis,
-                s.full_name,
-                s.gender,
-                sa.id          AS absensi_id,
-                sa.status,
-                sa.check_in,
-                sa.check_out,
-                sa.notes
+            SELECT s.id AS student_id, s.nis, s.full_name, s.gender,
+                   sa.id AS absensi_id, sa.status, sa.check_in, sa.check_out, sa.notes
             FROM students s
-            LEFT JOIN student_attendance sa
-                ON s.id = sa.student_id AND sa.date = ?
-            WHERE s.grade       = ?
-              AND s.major_id    = ?
-              AND s.class_group = ?
-              AND s.status      = 'aktif'
+            LEFT JOIN student_attendance sa ON s.id = sa.student_id AND sa.date = ?
+            WHERE s.class_id = ? AND s.status = 'aktif'
+            ORDER BY s.full_name ASC
+        ", [$date, $classId])->getResultArray();
+    }
+
+    // Legacy
+    public function getAbsensiHarian($date, $grade, $major_id, $class_group): array
+    {
+        return $this->db->query("
+            SELECT s.id AS student_id, s.nis, s.full_name, s.gender,
+                   sa.id AS absensi_id, sa.status, sa.check_in, sa.check_out, sa.notes
+            FROM students s
+            LEFT JOIN student_attendance sa ON s.id = sa.student_id AND sa.date = ?
+            WHERE s.grade = ? AND s.major_id = ? AND s.class_group = ? AND s.status = 'aktif'
             ORDER BY s.full_name ASC
         ", [$date, $grade, $major_id, $class_group])->getResultArray();
     }
 
     public function saveAbsensiHarian(array $rows, string $date, int $recorded_by): bool
     {
-        // Hapus data hari ini untuk kelas ini dulu (bulk replace)
         $studentIds = array_column($rows, 'student_id');
         if (!empty($studentIds)) {
             $this->db->table('student_attendance')
@@ -87,9 +96,9 @@ class AbsensiModel extends Model
                 'student_id'  => $row['student_id'],
                 'date'        => $date,
                 'status'      => $row['status'],
-                'check_in'    => $row['check_in']   ?? null,
-                'check_out'   => $row['check_out']  ?? null,
-                'notes'       => $row['notes']      ?? null,
+                'check_in'    => $row['check_in']  ?? null,
+                'check_out'   => $row['check_out'] ?? null,
+                'notes'       => $row['notes']     ?? null,
                 'recorded_by' => $recorded_by,
             ];
         }
@@ -97,58 +106,36 @@ class AbsensiModel extends Model
         return $this->db->table('student_attendance')->insertBatch($insertData) !== false;
     }
 
-    public function getAbsensiHarianById($id)
-    {
-        return $this->db->table('student_attendance')
-            ->where('id', $id)
-            ->get()->getRowArray();
-    }
-
-    public function updateAbsensiHarian($id, array $data): bool
-    {
-        return $this->db->table('student_attendance')
-            ->where('id', $id)
-            ->update($data);
-    }
-
-    // ==========================================
+    // ============================================================
     // ABSENSI PER MAPEL (student_subject_attendance)
-    // Input oleh Guru Mapel
-    // ==========================================
+    // ============================================================
 
-    public function getJadwalGuru($teacher_id, $day = null)
+    public function getJadwalGuru(int $teacher_id, ?string $day = null): array
     {
-        $builder = $this->db->table('schedules')
-            ->select('schedules.*, teachers.full_name AS nama_guru, majors.abbreviation AS major_name')
-            ->join('teachers', 'teachers.id = schedules.teacher_id')
-            ->join('majors', "majors.abbreviation = schedules.major", 'left')
-            ->where('schedules.teacher_id', $teacher_id)
-            ->where('schedules.is_active', 1);
+        $builder = $this->db->table('schedules sc')
+            ->select('sc.*, t.full_name AS nama_guru, c.nama_kelas, c.id AS class_id, m.abbreviation AS major_name')
+            ->join('teachers t', 't.id = sc.teacher_id')
+            ->join('classes c', 'c.id = sc.class_id', 'left')
+            ->join('majors m', 'm.abbreviation = sc.major', 'left')
+            ->where('sc.teacher_id', $teacher_id)
+            ->where('sc.is_active', 1);
 
-        if ($day) {
-            $builder->where('schedules.day', $day);
-        }
+        if ($day) $builder->where('sc.day', $day);
 
-        return $builder->orderBy('schedules.start_time', 'ASC')->get()->getResultArray();
+        return $builder->orderBy('sc.start_time', 'ASC')->get()->getResultArray();
     }
 
-    public function getOrCreateTeachingAttendance($schedule_id, $teacher_id, $date, $topic = null)
+    public function getOrCreateTeachingAttendance($schedule_id, $teacher_id, $date, $topic = null): int
     {
-        // Cek apakah sesi sudah ada
         $existing = $this->db->table('teaching_attendance')
             ->where('schedule_id', $schedule_id)
             ->where('teacher_id', $teacher_id)
             ->where('date', $date)
             ->get()->getRowArray();
 
-        if ($existing) {
-            return $existing['id'];
-        }
+        if ($existing) return $existing['id'];
 
-        // Ambil jadwal untuk start_time dan end_time
-        $schedule = $this->db->table('schedules')
-            ->where('id', $schedule_id)
-            ->get()->getRowArray();
+        $schedule = $this->db->table('schedules')->where('id', $schedule_id)->get()->getRowArray();
 
         $this->db->table('teaching_attendance')->insert([
             'schedule_id' => $schedule_id,
@@ -162,48 +149,42 @@ class AbsensiModel extends Model
         return $this->db->insertID();
     }
 
-    public function getAbsensiMapel($teaching_attendance_id, $schedule_id, $date)
+    // Baru: pakai class_id dari schedules
+    public function getAbsensiMapel(int $teaching_attendance_id, int $schedule_id, string $date): array
     {
-        // Ambil info jadwal untuk tahu kelas mana
-        $schedule = $this->db->table('schedules')
-            ->where('id', $schedule_id)
-            ->get()->getRowArray();
-
+        $schedule = $this->db->table('schedules')->where('id', $schedule_id)->get()->getRowArray();
         if (!$schedule) return [];
 
-        // Ambil jurusan id dari abbreviation
-        $major = $this->db->table('majors')
-            ->where('abbreviation', $schedule['major'])
-            ->get()->getRowArray();
+        // Gunakan class_id jika sudah ada, fallback ke grade+major+class_group
+        if (!empty($schedule['class_id'])) {
+            return $this->db->query("
+                SELECT s.id AS student_id, s.nis, s.full_name, s.gender,
+                       ssa.id AS absensi_id, ssa.status, ssa.notes
+                FROM students s
+                LEFT JOIN student_subject_attendance ssa
+                    ON s.id = ssa.student_id
+                    AND ssa.teaching_attendance_id = ?
+                    AND ssa.date = ?
+                WHERE s.class_id = ? AND s.status = 'aktif'
+                ORDER BY s.full_name ASC
+            ", [$teaching_attendance_id, $date, $schedule['class_id']])->getResultArray();
+        }
 
+        // Legacy fallback
+        $major    = $this->db->table('majors')->where('abbreviation', $schedule['major'])->get()->getRowArray();
         $major_id = $major['id'] ?? null;
 
         return $this->db->query("
-            SELECT
-                s.id            AS student_id,
-                s.nis,
-                s.full_name,
-                s.gender,
-                ssa.id          AS absensi_id,
-                ssa.status,
-                ssa.notes
+            SELECT s.id AS student_id, s.nis, s.full_name, s.gender,
+                   ssa.id AS absensi_id, ssa.status, ssa.notes
             FROM students s
             LEFT JOIN student_subject_attendance ssa
                 ON s.id = ssa.student_id
                 AND ssa.teaching_attendance_id = ?
                 AND ssa.date = ?
-            WHERE s.grade       = ?
-              AND s.major_id    = ?
-              AND s.class_group = ?
-              AND s.status      = 'aktif'
+            WHERE s.grade = ? AND s.major_id = ? AND s.class_group = ? AND s.status = 'aktif'
             ORDER BY s.full_name ASC
-        ", [
-            $teaching_attendance_id,
-            $date,
-            $schedule['grade'],
-            $major_id,
-            $schedule['class_group'],
-        ])->getResultArray();
+        ", [$teaching_attendance_id, $date, $schedule['grade'], $major_id, $schedule['class_group']])->getResultArray();
     }
 
     public function saveAbsensiMapel(array $rows, $teaching_attendance_id, $schedule_id, string $date): bool
@@ -232,38 +213,66 @@ class AbsensiModel extends Model
         return $this->db->table('student_subject_attendance')->insertBatch($insertData) !== false;
     }
 
-    // ==========================================
-    // REKAP ABSENSI
-    // ==========================================
+    // ============================================================
+    // REKAP & STATISTIK
+    // ============================================================
 
-    public function getRekapBulanan($grade, $major_id, $class_group, $bulan, $tahun)
+    // Baru: pakai class_id
+    public function getRekapBulananByClassId(int $classId, string $bulan, string $tahun): array
     {
         return $this->db->query("
-            SELECT
-                s.id AS student_id,
-                s.nis,
-                s.full_name,
-                s.gender,
+            SELECT s.id AS student_id, s.nis, s.full_name, s.gender,
                 COUNT(CASE WHEN sa.status = 'Hadir' THEN 1 END) AS hadir,
                 COUNT(CASE WHEN sa.status = 'Sakit' THEN 1 END) AS sakit,
                 COUNT(CASE WHEN sa.status = 'Izin'  THEN 1 END) AS izin,
                 COUNT(CASE WHEN sa.status = 'Alpa'  THEN 1 END) AS alpa,
                 COUNT(sa.id) AS total_hari
             FROM students s
-            LEFT JOIN student_attendance sa
-                ON s.id = sa.student_id
-                AND MONTH(sa.date) = ?
-                AND YEAR(sa.date)  = ?
-            WHERE s.grade       = ?
-              AND s.major_id    = ?
-              AND s.class_group = ?
-              AND s.status      = 'aktif'
-            GROUP BY s.id
-            ORDER BY s.full_name ASC
+            LEFT JOIN student_attendance sa ON s.id = sa.student_id
+                AND MONTH(sa.date) = ? AND YEAR(sa.date) = ?
+            WHERE s.class_id = ? AND s.status = 'aktif'
+            GROUP BY s.id ORDER BY s.full_name ASC
+        ", [$bulan, $tahun, $classId])->getResultArray();
+    }
+
+    // Legacy
+    public function getRekapBulanan($grade, $major_id, $class_group, $bulan, $tahun): array
+    {
+        return $this->db->query("
+            SELECT s.id AS student_id, s.nis, s.full_name, s.gender,
+                COUNT(CASE WHEN sa.status = 'Hadir' THEN 1 END) AS hadir,
+                COUNT(CASE WHEN sa.status = 'Sakit' THEN 1 END) AS sakit,
+                COUNT(CASE WHEN sa.status = 'Izin'  THEN 1 END) AS izin,
+                COUNT(CASE WHEN sa.status = 'Alpa'  THEN 1 END) AS alpa,
+                COUNT(sa.id) AS total_hari
+            FROM students s
+            LEFT JOIN student_attendance sa ON s.id = sa.student_id
+                AND MONTH(sa.date) = ? AND YEAR(sa.date) = ?
+            WHERE s.grade = ? AND s.major_id = ? AND s.class_group = ? AND s.status = 'aktif'
+            GROUP BY s.id ORDER BY s.full_name ASC
         ", [$bulan, $tahun, $grade, $major_id, $class_group])->getResultArray();
     }
 
-    public function getStatistikKehadiran($grade = null, $major_id = null, $class_group = null, $bulan = null, $tahun = null)
+    // Baru: statistik pakai class_id
+    public function getStatistikKehadiranByClassId(int $classId, string $bulan, string $tahun): array
+    {
+        return $this->db->query("
+            SELECT
+                COUNT(CASE WHEN sa.status = 'Hadir' THEN 1 END) AS total_hadir,
+                COUNT(CASE WHEN sa.status = 'Sakit' THEN 1 END) AS total_sakit,
+                COUNT(CASE WHEN sa.status = 'Izin'  THEN 1 END) AS total_izin,
+                COUNT(CASE WHEN sa.status = 'Alpa'  THEN 1 END) AS total_alpa,
+                COUNT(sa.id) AS total_records,
+                COUNT(DISTINCT s.id) AS total_siswa
+            FROM students s
+            LEFT JOIN student_attendance sa ON s.id = sa.student_id
+                AND MONTH(sa.date) = ? AND YEAR(sa.date) = ?
+            WHERE s.class_id = ? AND s.status = 'aktif'
+        ", [$bulan, $tahun, $classId])->getRowArray() ?? [];
+    }
+
+    // Legacy
+    public function getStatistikKehadiran($grade = null, $major_id = null, $class_group = null, $bulan = null, $tahun = null): array
     {
         $bulan = $bulan ?? date('m');
         $tahun = $tahun ?? date('Y');
@@ -284,10 +293,26 @@ class AbsensiModel extends Model
             FROM students s
             LEFT JOIN student_attendance sa ON s.id = sa.student_id
             WHERE $where
-        ")->getRowArray();
+        ")->getRowArray() ?? [];
     }
 
-    public function getAbsensiTrend($grade = null, $major_id = null, $class_group = null, $bulan = null, $tahun = null)
+    // Baru: trend pakai class_id
+    public function getAbsensiTrendByClassId(int $classId, string $bulan, string $tahun): array
+    {
+        return $this->db->query("
+            SELECT DAY(sa.date) AS hari, sa.date,
+                COUNT(CASE WHEN sa.status = 'Hadir' THEN 1 END) AS hadir,
+                COUNT(CASE WHEN sa.status = 'Alpa'  THEN 1 END) AS alpa
+            FROM students s
+            JOIN student_attendance sa ON s.id = sa.student_id
+            WHERE s.class_id = ? AND s.status = 'aktif'
+              AND MONTH(sa.date) = ? AND YEAR(sa.date) = ?
+            GROUP BY sa.date ORDER BY sa.date ASC
+        ", [$classId, $bulan, $tahun])->getResultArray();
+    }
+
+    // Legacy
+    public function getAbsensiTrend($grade = null, $major_id = null, $class_group = null, $bulan = null, $tahun = null): array
     {
         $bulan = $bulan ?? date('m');
         $tahun = $tahun ?? date('Y');
@@ -298,21 +323,35 @@ class AbsensiModel extends Model
         if ($class_group) $where .= " AND s.class_group = '$class_group'";
 
         return $this->db->query("
-            SELECT
-                DAY(sa.date) AS hari,
-                sa.date,
+            SELECT DAY(sa.date) AS hari, sa.date,
                 COUNT(CASE WHEN sa.status = 'Hadir' THEN 1 END) AS hadir,
                 COUNT(CASE WHEN sa.status = 'Alpa'  THEN 1 END) AS alpa
             FROM students s
             JOIN student_attendance sa ON s.id = sa.student_id
             WHERE $where
-            GROUP BY sa.date
-            ORDER BY sa.date ASC
+            GROUP BY sa.date ORDER BY sa.date ASC
         ")->getResultArray();
     }
 
-    // Siswa dengan absensi terbanyak (alpha)
-    public function getSiswaAlpaTerbanyak($grade = null, $major_id = null, $bulan = null, $tahun = null, $limit = 10)
+    // Baru: alpa terbanyak pakai class_id
+    public function getSiswaAlpaTerbanyakByClassId(int $classId, string $bulan, string $tahun, int $limit = 10): array
+    {
+        return $this->db->query("
+            SELECT s.id, s.nis, s.full_name, s.gender,
+                   c.nama_kelas, COUNT(sa.id) AS total_alpa
+            FROM students s
+            JOIN student_attendance sa ON s.id = sa.student_id
+            JOIN classes c ON s.class_id = c.id
+            WHERE s.class_id = ? AND s.status = 'aktif' AND sa.status = 'Alpa'
+              AND MONTH(sa.date) = ? AND YEAR(sa.date) = ?
+            GROUP BY s.id
+            ORDER BY total_alpa DESC
+            LIMIT $limit
+        ", [$classId, $bulan, $tahun])->getResultArray();
+    }
+
+    // Legacy
+    public function getSiswaAlpaTerbanyak($grade = null, $major_id = null, $bulan = null, $tahun = null, $limit = 10): array
     {
         $bulan = $bulan ?? date('m');
         $tahun = $tahun ?? date('Y');
@@ -322,20 +361,14 @@ class AbsensiModel extends Model
         if ($major_id) $where .= " AND s.major_id = $major_id";
 
         return $this->db->query("
-            SELECT
-                s.id,
-                s.nis,
-                s.full_name,
-                s.grade,
-                m.abbreviation AS major_name,
-                s.class_group,
-                COUNT(sa.id) AS total_alpa
+            SELECT s.id, s.nis, s.full_name, s.grade,
+                   m.abbreviation AS major_name, s.class_group,
+                   COUNT(sa.id) AS total_alpa
             FROM students s
             JOIN student_attendance sa ON s.id = sa.student_id
             JOIN majors m ON s.major_id = m.id
             WHERE $where
-            GROUP BY s.id
-            ORDER BY total_alpa DESC
+            GROUP BY s.id ORDER BY total_alpa DESC
             LIMIT $limit
         ")->getResultArray();
     }
