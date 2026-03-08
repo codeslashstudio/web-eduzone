@@ -134,6 +134,16 @@ $routes->group('absensi', ['filter' => 'auth'], function ($routes) {
 });
 
 // ==============================
+// ABSENSI PER JAM PELAJARAN
+// ==============================
+$routes->group('absensi-mapel', ['filter' => 'auth'], function ($routes) {
+    $routes->get('/',              'AbsensiMapel::index');
+    $routes->get('input/(:num)',   'AbsensiMapel::input/$1');
+    $routes->post('store/(:num)',  'AbsensiMapel::store/$1');
+    $routes->get('rekap',          'AbsensiMapel::rekap');
+});
+
+// ==============================
 // ACCOUNT
 // ==============================
 $routes->get('password',         'Account::password',       ['filter' => 'auth']);

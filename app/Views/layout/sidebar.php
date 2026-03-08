@@ -156,8 +156,11 @@ function isActive(string $path): string {
 <a href="<?= base_url('jadwal') ?>" class="menu-item <?= isActive('jadwal') ?> flex items-center space-x-3 px-4 py-3 rounded-xl">
     <i class="fas fa-calendar-alt w-5"></i><span class="sidebar-text font-semibold text-sm">Jadwal Saya</span>
 </a>
-<a href="<?= base_url('absensi/mapel') ?>" class="menu-item <?= isActive('absensi/mapel') ?> flex items-center space-x-3 px-4 py-3 rounded-xl">
-    <i class="fas fa-clipboard-check w-5"></i><span class="sidebar-text font-semibold text-sm">Absensi Mapel</span>
+<a href="<?= base_url('absensi-mapel') ?>" class="menu-item <?= isActive('absensi-mapel') ?> flex items-center space-x-3 px-4 py-3 rounded-xl">
+    <i class="fas fa-clipboard-list w-5"></i><span class="sidebar-text font-semibold text-sm">Absensi Per JP</span>
+</a>
+<a href="<?= base_url('absensi-mapel/rekap') ?>" class="menu-item <?= isActive('absensi-mapel/rekap') ?> flex items-center space-x-3 px-4 py-3 rounded-xl">
+    <i class="fas fa-chart-bar w-5"></i><span class="sidebar-text font-semibold text-sm">Rekap Absensi</span>
 </a>
 <a href="<?= base_url('jurnal') ?>" class="menu-item <?= isActive('jurnal') ?> flex items-center space-x-3 px-4 py-3 rounded-xl">
     <i class="fas fa-book-open w-5"></i><span class="sidebar-text font-semibold text-sm">Jurnal Mengajar</span>
@@ -374,9 +377,9 @@ function isActive(string $path): string {
 </a>
 <?php endif ?>
 
-<!-- Divider + Logout (semua role) -->
+<!-- Divider + Account Settings (semua role) -->
 <div class="mt-4 pt-4 border-t border-gray-100">
-    <a href="<?= base_url('password') ?>" class="menu-item flex items-center space-x-3 px-4 py-3 rounded-xl">
+    <a href="<?= base_url('password') ?>" class="menu-item <?= isActive('password') ?> flex items-center space-x-3 px-4 py-3 rounded-xl mb-1">
         <i class="fas fa-key w-5"></i><span class="sidebar-text font-semibold text-sm">Ubah Password</span>
     </a>
     <a href="<?= base_url('auth/logout') ?>" class="menu-item flex items-center space-x-3 px-4 py-3 rounded-xl text-red-500 hover:bg-red-50">
