@@ -3,10 +3,12 @@
 namespace App\Controllers;
 
 use App\Models\TeacherModel;
+use App\Models\ClassModel;
 
 class Guru extends BaseController
 {
     protected $guruModel;
+    protected $classModel;
 
     // Role yang boleh VIEW
     protected $viewRoles = ['kepsek', 'tu', 'superadmin'];
@@ -16,7 +18,8 @@ class Guru extends BaseController
 
     public function __construct()
     {
-        $this->guruModel = new TeacherModel();
+        $this->guruModel  = new TeacherModel();
+        $this->classModel = new ClassModel();
         helper(['form', 'url']);
     }
 
@@ -57,8 +60,9 @@ class Guru extends BaseController
 
         $data = [
             'title'   => 'Data Guru',
-            'guru'    => $this->guruModel->getGuruAktif(),
-            'canEdit' => $this->canEdit(),
+            'guru'      => $this->guruModel->getGuruAktif(),
+            'kelasList' => $this->classModel->getAll(),
+            'canEdit'   => $this->canEdit(),
         ];
 
         return view('data_guru/index', $data);

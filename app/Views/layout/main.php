@@ -8,14 +8,18 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Outfit (display) + Plus Jakarta Sans (body) — selaras dengan landing, login, dashboard index -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
     <?php
     // ============================================================
     // Ambil dari session SEKALI di sini — tidak perlu di view lain
+    // Default warna selaras dengan landing/login (#4c6ef5 / #3b5bdb)
     // ============================================================
-    $colorPrimary   = session()->get('color_primary')   ?? '#3B82F6';
-    $colorSecondary = session()->get('color_secondary')  ?? '#2563EB';
+    $colorPrimary   = session()->get('color_primary')   ?? '#4c6ef5';
+    $colorSecondary = session()->get('color_secondary')  ?? '#3b5bdb';
     $roleIcon       = session()->get('role_icon')        ?? 'fa-user';
     $roleName       = session()->get('role_name')        ?? 'User';
     $username       = session()->get('username')         ?? '';
@@ -24,20 +28,34 @@
 
     <style>
         /* ============================================================
-           CSS VARIABLES — set sekali, berlaku di seluruh halaman
+           CSS VARIABLES — selaras dengan --ac di landing/login/dashboard
            ============================================================ */
         :root {
-            --color-primary:   <?= $colorPrimary ?>;
-            --color-secondary: <?= $colorSecondary ?>;
+            --color-primary:     <?= $colorPrimary ?>;
+            --color-secondary:   <?= $colorSecondary ?>;
             --color-primary-rgb: <?= implode(',', sscanf($colorPrimary, '#%02x%02x%02x')) ?>;
         }
 
+        /* ============================================================
+           TYPOGRAPHY — Outfit untuk heading, Plus Jakarta Sans untuk body
+           Selaras dengan semua halaman pre-login
+           ============================================================ */
         * {
             font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
         }
 
+        h1, h2, h3, h4, h5, h6,
+        .font-display {
+            font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        /* Override Tailwind heading fonts */
+        .text-xl, .text-2xl, .text-3xl, .text-4xl {
+            font-family: 'Outfit', sans-serif;
+        }
+
         /* ============================================================
-           SIDEBAR — putih seperti tampilan lama
+           SIDEBAR — putih, konsisten dengan design lama
            ============================================================ */
         .sidebar {
             width: 280px;
@@ -59,7 +77,7 @@
         }
 
         /* ============================================================
-           MENU ITEMS — warna dari CSS variable
+           MENU ITEMS — gradient dari CSS variable
            ============================================================ */
         .menu-item {
             transition: all 0.3s ease;
@@ -80,20 +98,9 @@
             box-shadow: 0 4px 12px rgba(var(--color-primary-rgb), 0.3);
         }
 
-        /* Logo & user profile border */
-        .sidebar-divider {
-            border-color: #e5e7eb;
-        }
-
-        /* User avatar di sidebar */
-        .sidebar-avatar {
-            background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
-        }
-
-        /* Logo icon */
-        .sidebar-logo-icon {
-            background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
-        }
+        .sidebar-divider    { border-color: #e5e7eb; }
+        .sidebar-avatar     { background: linear-gradient(135deg, var(--color-primary), var(--color-secondary)); }
+        .sidebar-logo-icon  { background: linear-gradient(135deg, var(--color-primary), var(--color-secondary)); }
 
         /* ============================================================
            MAIN CONTENT
@@ -108,7 +115,7 @@
         }
 
         /* ============================================================
-           HEADER
+           TOP HEADER
            ============================================================ */
         .top-header {
             background: white;
@@ -116,7 +123,7 @@
         }
 
         /* ============================================================
-           ACCENT ELEMENTS — pakai var di seluruh halaman
+           ACCENT ELEMENTS — berlaku di seluruh halaman turunan
            ============================================================ */
         .btn-primary {
             background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
@@ -144,16 +151,23 @@
             color: var(--color-primary);
         }
 
-        .card-border-accent {
-            border-left: 4px solid var(--color-primary);
+        .card-border-accent { border-left: 4px solid var(--color-primary); }
+
+        /* Focus ring selaras dengan --ac */
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--color-primary) !important;
+            box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb), 0.15);
         }
 
         /* ============================================================
-           SCROLLBAR
+           SCROLLBAR — selaras dengan halaman lain (warna accent)
            ============================================================ */
-        .sidebar::-webkit-scrollbar { width: 4px; }
-        .sidebar::-webkit-scrollbar-track { background: transparent; }
-        .sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); border-radius: 4px; }
+        ::-webkit-scrollbar       { width: 4px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: var(--color-primary); border-radius: 2px; }
+
+        .sidebar::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.12); }
 
         /* ============================================================
            FLASH MESSAGES
@@ -201,17 +215,9 @@
 
         <!-- Navigation -->
         <nav class="flex-1 p-3 space-y-1 overflow-y-auto">
-            <?= $this->renderSection('sidebar_menu') ?>
+            <?= view('layout/sidebar') ?>
         </nav>
 
-        <!-- Logout -->
-        <div class="p-3 border-t sidebar-divider flex-shrink-0">
-            <a href="<?= base_url('auth/logout') ?>"
-               class="flex items-center space-x-3 px-4 py-3 rounded-xl text-red-500 hover:bg-red-50 transition-all">
-                <i class="fas fa-sign-out-alt text-base w-5 flex-shrink-0"></i>
-                <span class="sidebar-text font-semibold text-sm">Logout</span>
-            </a>
-        </div>
     </aside>
 
     <!-- ============================================================
@@ -222,6 +228,7 @@
         <!-- Top Header -->
         <header class="top-header sticky top-0 z-40 shadow-sm">
             <div class="flex items-center justify-between px-6 py-4">
+
                 <!-- Kiri: Toggle + Judul -->
                 <div class="flex items-center space-x-4">
                     <button onclick="toggleSidebar()"
@@ -234,7 +241,7 @@
                     </div>
                 </div>
 
-                <!-- Kanan: Notif + Waktu + Role Badge -->
+                <!-- Kanan: Waktu + Notif + Role Badge -->
                 <div class="flex items-center space-x-3">
                     <div class="hidden md:block text-right">
                         <p class="text-xs font-semibold text-gray-700" id="current-date"></p>
@@ -296,19 +303,14 @@
         function toggleSidebar() {
             const sidebar     = document.getElementById('sidebar');
             const mainContent = document.getElementById('main-content');
-
             sidebar.classList.toggle('collapsed');
             mainContent.classList.toggle('expanded');
-
-            // Simpan state ke localStorage
-            const isCollapsed = sidebar.classList.contains('collapsed');
-            localStorage.setItem('sidebarCollapsed', isCollapsed);
+            localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
         }
 
         // Restore sidebar state
         document.addEventListener('DOMContentLoaded', () => {
-            const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
-            if (isCollapsed) {
+            if (localStorage.getItem('sidebarCollapsed') === 'true') {
                 document.getElementById('sidebar').classList.add('collapsed');
                 document.getElementById('main-content').classList.add('expanded');
             }
@@ -316,17 +318,15 @@
 
         // Date & Time
         function updateDateTime() {
-            const now     = new Date();
-            const dateEl  = document.getElementById('current-date');
-            const timeEl  = document.getElementById('current-time');
+            const now    = new Date();
+            const dateEl = document.getElementById('current-date');
+            const timeEl = document.getElementById('current-time');
             if (!dateEl || !timeEl) return;
-
             dateEl.textContent = now.toLocaleDateString('id-ID', {
                 weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
             });
             timeEl.textContent = now.toLocaleTimeString('id-ID');
         }
-
         updateDateTime();
         setInterval(updateDateTime, 1000);
     </script>
