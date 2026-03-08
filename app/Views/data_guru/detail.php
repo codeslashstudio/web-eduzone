@@ -1,255 +1,254 @@
 <?php $this->extend('layout/main') ?>
 
 <?php $this->section('sidebar_menu') ?>
-<?php $role = session()->get('role') ?>
-<a href="<?= base_url('dashboard/' . $role) ?>" class="menu-item flex items-center space-x-3 px-4 py-3">
-    <i class="fas fa-home w-5"></i>
-    <span class="sidebar-text font-semibold text-sm">Dashboard</span>
-</a>
-<a href="<?= base_url('siswa') ?>" class="menu-item flex items-center space-x-3 px-4 py-3">
-    <i class="fas fa-user-graduate w-5"></i>
-    <span class="sidebar-text font-semibold text-sm">Data Siswa</span>
-</a>
-<a href="<?= base_url('guru') ?>" class="menu-item active flex items-center space-x-3 px-4 py-3">
+<a href="<?= base_url('guru') ?>" class="menu-item active flex items-center space-x-3 px-4 py-3 rounded-xl">
     <i class="fas fa-chalkboard-teacher w-5"></i>
     <span class="sidebar-text font-semibold text-sm">Data Guru</span>
 </a>
-<?php if (in_array($role, ['kepsek', 'tu', 'superadmin'])): ?>
-<a href="<?= base_url('keuangan') ?>" class="menu-item flex items-center space-x-3 px-4 py-3">
-    <i class="fas fa-money-bill-wave w-5"></i>
-    <span class="sidebar-text font-semibold text-sm">Keuangan</span>
-</a>
-<a href="<?= base_url('laporan') ?>" class="menu-item flex items-center space-x-3 px-4 py-3">
-    <i class="fas fa-chart-line w-5"></i>
-    <span class="sidebar-text font-semibold text-sm">Laporan</span>
+<?php if ($canEdit ?? false): ?>
+<a href="<?= base_url('guru/edit/' . ($guru['id'] ?? '')) ?>" class="menu-item flex items-center space-x-3 px-4 py-3 rounded-xl">
+    <i class="fas fa-pencil w-5"></i>
+    <span class="sidebar-text font-semibold text-sm">Edit Guru</span>
 </a>
 <?php endif ?>
-<a href="<?= base_url('password') ?>" class="menu-item flex items-center space-x-3 px-4 py-3">
-    <i class="fas fa-key w-5"></i>
-    <span class="sidebar-text font-semibold text-sm">Ubah Password</span>
+<a href="<?= base_url('dashboard') ?>" class="menu-item flex items-center space-x-3 px-4 py-3 rounded-xl">
+    <i class="fas fa-arrow-left w-5"></i>
+    <span class="sidebar-text font-semibold text-sm">Kembali</span>
 </a>
 <?php $this->endSection() ?>
 
-
 <?php $this->section('content') ?>
+<?php
+$guru    = $guru    ?? [];
+$canEdit = $canEdit ?? false;
+$db      = \Config\Database::connect();
 
-<style>
-    @media print {
-        #sidebar, .no-print { display: none !important; }
-        #main-content { margin-left: 0 !important; }
-    }
-    .info-card { transition: all 0.3s ease; }
-    .info-card:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.08); }
-</style>
+// Jadwal guru
+$jadwal = $db->query("
+    SELECT sc.*, c.nama_kelas
+    FROM schedules sc
+    LEFT JOIN classes c ON c.id = sc.class_id
+    WHERE sc.teacher_id = ? AND sc.is_active = 1
+    ORDER BY FIELD(sc.day,'Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'), sc.start_time
+", [$guru['id'] ?? 0])->getResultArray();
 
-<!-- Breadcrumb + Action Buttons -->
-<div class="flex items-center justify-between mb-6 no-print">
-    <div class="flex items-center space-x-2 text-sm text-gray-500">
-        <a href="<?= base_url('guru') ?>" class="hover:text-accent transition-colors">Data Guru</a>
-        <i class="fas fa-chevron-right text-xs"></i>
-        <span class="font-semibold" style="color: var(--color-primary)">Detail Guru</span>
-    </div>
-    <div class="flex items-center space-x-3">
-        <button onclick="window.print()"
-            class="flex items-center space-x-2 px-4 py-2 bg-emerald-500 text-white rounded-xl hover:bg-emerald-600 transition-all font-semibold text-sm">
-            <i class="fas fa-print"></i><span>Cetak</span>
-        </button>
-        <?php if ($canEdit): ?>
-        <a href="<?= base_url('guru/edit/' . $guru['id']) ?>"
-            class="flex items-center space-x-2 px-4 py-2 bg-yellow-500 text-white rounded-xl hover:bg-yellow-600 transition-all font-semibold text-sm">
-            <i class="fas fa-edit"></i><span>Edit</span>
-        </a>
-        <button onclick="document.getElementById('deleteModal').classList.remove('hidden')"
-            class="flex items-center space-x-2 px-4 py-2 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-all font-semibold text-sm">
-            <i class="fas fa-trash"></i><span>Hapus</span>
-        </button>
-        <?php endif ?>
-        <a href="<?= base_url('guru') ?>"
-            class="flex items-center space-x-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-all font-semibold text-sm">
-            <i class="fas fa-arrow-left"></i><span>Kembali</span>
-        </a>
-    </div>
-</div>
+// Absensi bulan ini
+$absensiStat = $db->query("
+    SELECT
+        SUM(CASE WHEN status='Hadir' THEN 1 ELSE 0 END) AS hadir,
+        SUM(CASE WHEN status='Sakit' THEN 1 ELSE 0 END) AS sakit,
+        SUM(CASE WHEN status='Izin'  THEN 1 ELSE 0 END) AS izin,
+        SUM(CASE WHEN status='Alpa'  THEN 1 ELSE 0 END) AS alpa,
+        COUNT(*) AS total
+    FROM teacher_attendance
+    WHERE teacher_id = ? AND MONTH(date) = ? AND YEAR(date) = ?
+", [$guru['id'] ?? 0, date('m'), date('Y')])->getRowArray();
 
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+$hariUrut = ['Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+$jadwalPerHari = [];
+foreach ($hariUrut as $h) {
+    $jadwalPerHari[$h] = array_values(array_filter($jadwal, fn($j) => $j['day'] === $h));
+}
+$totalJam = 0;
+foreach ($jadwal as $j) {
+    $totalJam += (strtotime($j['end_time']) - strtotime($j['start_time'])) / 3600;
+}
+?>
 
-    <!-- Profile Card (Left) -->
-    <div class="lg:col-span-1">
-        <div class="bg-white rounded-2xl shadow-lg overflow-hidden" data-aos="fade-right">
-            <!-- Banner -->
-            <div class="p-6 text-center" style="background: linear-gradient(135deg, var(--color-primary), var(--color-secondary))">
-                <?php if (!empty($guru['photo'])): ?>
-                    <img src="<?= base_url('uploads/guru/' . $guru['photo']) ?>"
-                        alt="<?= esc($guru['full_name']) ?>"
-                        class="w-32 h-32 rounded-full mx-auto border-4 border-white shadow-lg object-cover">
-                <?php else: ?>
-                    <div class="w-32 h-32 bg-white rounded-full mx-auto border-4 border-white shadow-lg flex items-center justify-center">
-                        <span class="text-5xl font-bold" style="color: var(--color-primary)">
-                            <?= strtoupper(substr($guru['full_name'], 0, 1)) ?>
-                        </span>
-                    </div>
-                <?php endif ?>
-                <h2 class="text-xl font-bold text-white mt-4"><?= esc($guru['full_name']) ?></h2>
-                <p class="text-white/70 mt-1 text-sm"><?= esc($guru['education_major'] ?? '-') ?></p>
-            </div>
-
-            <!-- Info Singkat -->
-            <div class="p-5 space-y-3">
-                <?php
-                $statusColors = [
-                    'PNS'     => 'bg-green-100 text-green-800',
-                    'PPPK'    => 'bg-blue-100 text-blue-800',
-                    'Honorer' => 'bg-yellow-100 text-yellow-800',
-                    'GTY'     => 'bg-purple-100 text-purple-800',
-                    'GTT'     => 'bg-orange-100 text-orange-800',
-                ];
-                $statusClass = $statusColors[$guru['employment_status'] ?? ''] ?? 'bg-gray-100 text-gray-800';
-                ?>
-                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
-                    <span class="text-sm font-semibold text-gray-500">Status</span>
-                    <span class="px-3 py-1 text-xs font-semibold rounded-full <?= $statusClass ?>">
-                        <?= esc($guru['employment_status'] ?? '-') ?>
-                    </span>
-                </div>
-
-                <?php
-                $infoItems = [
-                    ['icon' => 'fa-id-card',       'color' => 'var(--color-primary)', 'label' => 'NIP',        'value' => $guru['nip'] ?? '-'],
-                    ['icon' => 'fa-id-badge',       'color' => '#6366f1',             'label' => 'NUPTK',      'value' => $guru['nuptk'] ?? '-'],
-                    ['icon' => 'fa-graduation-cap', 'color' => '#3b82f6',             'label' => 'Pendidikan', 'value' => $guru['last_education'] ?? '-'],
-                ];
-                foreach ($infoItems as $item): ?>
-                <div class="flex items-center space-x-3 p-3 bg-gray-50 rounded-xl">
-                    <div class="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
-                         style="background: <?= $item['color'] ?>20">
-                        <i class="fas <?= $item['icon'] ?> text-sm" style="color: <?= $item['color'] ?>"></i>
-                    </div>
-                    <div>
-                        <p class="text-xs text-gray-400"><?= $item['label'] ?></p>
-                        <p class="font-semibold text-gray-900 text-sm"><?= esc($item['value']) ?></p>
-                    </div>
-                </div>
-                <?php endforeach ?>
-            </div>
-        </div>
-    </div>
-
-    <!-- Detail (Right) -->
-    <div class="lg:col-span-2 space-y-6">
-
-        <!-- Data Pribadi -->
-        <div class="info-card bg-white rounded-2xl shadow-lg p-6" data-aos="fade-up">
-            <h3 class="text-base font-bold text-gray-900 mb-5 pb-2 border-b flex items-center">
-                <span class="w-7 h-7 rounded-lg flex items-center justify-center mr-2 text-white text-xs" style="background: var(--color-primary)">
-                    <i class="fas fa-user"></i>
-                </span>
-                Data Pribadi
-            </h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <?php
-                $pribadi = [
-                    'Jenis Kelamin'        => ($guru['gender'] ?? '') === 'L' ? 'Laki-laki' : 'Perempuan',
-                    'Agama'                => $guru['religion'] ?? '-',
-                    'Tempat Lahir'         => $guru['birth_place'] ?? '-',
-                    'Tanggal Lahir'        => !empty($guru['birth_date']) ? date('d F Y', strtotime($guru['birth_date'])) : '-',
-                    'Tgl Mulai Mengajar'   => !empty($guru['joined_date']) ? date('d F Y', strtotime($guru['joined_date'])) : '-',
-                    'Jurusan/Prodi'        => $guru['education_major'] ?? '-',
-                ];
-                foreach ($pribadi as $label => $value): ?>
-                <div>
-                    <p class="text-xs text-gray-400 mb-1"><?= $label ?></p>
-                    <p class="font-semibold text-gray-900 text-sm"><?= esc($value) ?></p>
-                </div>
-                <?php endforeach ?>
-                <div class="md:col-span-2">
-                    <p class="text-xs text-gray-400 mb-1">Alamat</p>
-                    <p class="font-semibold text-gray-900 text-sm"><?= esc($guru['address'] ?? '-') ?></p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Kontak -->
-        <div class="info-card bg-white rounded-2xl shadow-lg p-6" data-aos="fade-up" data-aos-delay="100">
-            <h3 class="text-base font-bold text-gray-900 mb-5 pb-2 border-b flex items-center">
-                <span class="w-7 h-7 rounded-lg flex items-center justify-center mr-2 text-white text-xs" style="background: var(--color-secondary)">
-                    <i class="fas fa-address-book"></i>
-                </span>
-                Informasi Kontak
-            </h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div class="flex items-center space-x-3 p-4 bg-emerald-50 rounded-xl">
-                    <div class="w-11 h-11 bg-emerald-500 rounded-full flex items-center justify-center flex-shrink-0">
-                        <i class="fas fa-phone text-white"></i>
-                    </div>
-                    <div>
-                        <p class="text-xs text-gray-400">No. HP/WA</p>
-                        <p class="font-semibold text-gray-900 text-sm"><?= esc($guru['phone'] ?? '-') ?></p>
-                    </div>
-                </div>
-                <div class="flex items-center space-x-3 p-4 bg-blue-50 rounded-xl">
-                    <div class="w-11 h-11 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
-                        <i class="fas fa-envelope text-white"></i>
-                    </div>
-                    <div>
-                        <p class="text-xs text-gray-400">Email</p>
-                        <p class="font-semibold text-gray-900 text-sm break-all"><?= esc($guru['email'] ?? '-') ?></p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Informasi Sistem -->
-        <div class="info-card bg-white rounded-2xl shadow-lg p-6" data-aos="fade-up" data-aos-delay="200">
-            <h3 class="text-base font-bold text-gray-900 mb-5 pb-2 border-b flex items-center">
-                <span class="w-7 h-7 rounded-lg flex items-center justify-center mr-2 text-white text-xs bg-orange-500">
-                    <i class="fas fa-info-circle"></i>
-                </span>
-                Informasi Sistem
-            </h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                <div>
-                    <p class="text-xs text-gray-400 mb-1">Terdaftar Sejak</p>
-                    <p class="font-semibold text-gray-900">
-                        <?= !empty($guru['created_at']) ? date('d F Y, H:i', strtotime($guru['created_at'])) . ' WIB' : '-' ?>
-                    </p>
-                </div>
-                <div>
-                    <p class="text-xs text-gray-400 mb-1">Terakhir Diupdate</p>
-                    <p class="font-semibold text-gray-900">
-                        <?= !empty($guru['updated_at']) ? date('d F Y, H:i', strtotime($guru['updated_at'])) . ' WIB' : '-' ?>
-                    </p>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Modal Hapus -->
-<?php if ($canEdit): ?>
-<div id="deleteModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center no-print">
-    <div class="bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl">
-        <div class="text-center">
-            <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 mb-4">
-                <i class="fas fa-exclamation-triangle text-red-600 text-3xl"></i>
-            </div>
-            <h3 class="text-xl font-bold text-gray-900 mb-2">Konfirmasi Hapus</h3>
-            <p class="text-gray-600 mb-2">Apakah Anda yakin ingin menghapus data guru</p>
-            <p class="font-bold text-gray-900 mb-6"><?= esc($guru['full_name']) ?></p>
-            <div class="flex space-x-4">
-                <button onclick="document.getElementById('deleteModal').classList.add('hidden')"
-                    class="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 font-semibold transition-all">
-                    Batal
-                </button>
-                <form action="<?= base_url('guru/delete/' . $guru['id']) ?>" method="POST" class="flex-1">
-                    <?= csrf_field() ?>
-                    <button type="submit" class="w-full px-4 py-2 bg-red-500 text-white rounded-xl hover:bg-red-600 font-semibold transition-all">
-                        Hapus
-                    </button>
-                </form>
-            </div>
-        </div>
-    </div>
+<!-- Flash -->
+<?php if (session()->getFlashdata('success')): ?>
+<div class="bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-2xl p-4 mb-5 flex gap-3">
+    <i class="fas fa-check-circle mt-0.5"></i>
+    <p class="text-sm"><?= session()->getFlashdata('success') ?></p>
 </div>
 <?php endif ?>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+
+    <!-- Profil Card -->
+    <div class="lg:col-span-1 space-y-4">
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden" data-aos="fade-up">
+            <!-- Header gradient -->
+            <div class="h-20" style="background:linear-gradient(135deg,var(--color-primary),var(--color-secondary))"></div>
+            <!-- Foto -->
+            <div class="px-5 pb-5 -mt-10">
+                <div class="w-20 h-20 rounded-2xl border-4 border-white overflow-hidden shadow-lg mx-auto mb-3">
+                    <?php if (!empty($guru['photo'])): ?>
+                    <img src="<?= base_url('uploads/guru/' . $guru['photo']) ?>" class="w-full h-full object-cover" alt="">
+                    <?php else: ?>
+                    <div class="w-full h-full flex items-center justify-center text-white text-2xl font-bold"
+                         style="background:var(--color-primary)">
+                        <?= strtoupper(substr($guru['full_name'] ?? 'G', 0, 1)) ?>
+                    </div>
+                    <?php endif ?>
+                </div>
+                <div class="text-center">
+                    <h2 class="font-bold text-gray-900 text-lg leading-tight"><?= esc($guru['full_name'] ?? '-') ?></h2>
+                    <p class="text-xs text-gray-400 mt-1">
+                        <?= esc($guru['major_name'] ?? 'Guru') ?>
+                    </p>
+                    <?php if ($guru['kelas_wali'] ?? ''): ?>
+                    <span class="inline-block mt-2 text-xs font-bold px-3 py-1 rounded-full bg-purple-100 text-purple-700">
+                        <i class="fas fa-home mr-1"></i> Wali <?= esc($guru['kelas_wali']) ?>
+                    </span>
+                    <?php endif ?>
+                </div>
+
+                <!-- Stats mini -->
+                <div class="grid grid-cols-3 gap-2 mt-4">
+                    <div class="text-center bg-gray-50 rounded-xl py-2.5">
+                        <p class="font-bold text-gray-900 text-lg"><?= count($jadwal) ?></p>
+                        <p class="text-xs text-gray-400">Jadwal</p>
+                    </div>
+                    <div class="text-center bg-gray-50 rounded-xl py-2.5">
+                        <p class="font-bold text-gray-900 text-lg"><?= round($totalJam, 1) ?></p>
+                        <p class="text-xs text-gray-400">Jam/mgg</p>
+                    </div>
+                    <div class="text-center bg-gray-50 rounded-xl py-2.5">
+                        <?php $pct = ($absensiStat['total'] ?? 0) > 0
+                            ? round(($absensiStat['hadir'] ?? 0) / $absensiStat['total'] * 100)
+                            : 0 ?>
+                        <p class="font-bold text-gray-900 text-lg"><?= $pct ?>%</p>
+                        <p class="text-xs text-gray-400">Hadir</p>
+                    </div>
+                </div>
+
+                <!-- Aksi -->
+                <?php if ($canEdit): ?>
+                <div class="flex gap-2 mt-4">
+                    <a href="<?= base_url('guru/edit/' . $guru['id']) ?>"
+                       class="flex-1 btn-primary py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2">
+                        <i class="fas fa-pencil text-xs"></i> Edit
+                    </a>
+                    <form method="POST" action="<?= base_url('guru/delete/' . $guru['id']) ?>"
+                          onsubmit="return confirm('Hapus data guru ini?')">
+                        <?= csrf_field() ?>
+                        <button type="submit"
+                            class="px-4 py-2.5 rounded-xl text-sm font-semibold bg-red-50 text-red-500 hover:bg-red-100 transition-colors flex items-center gap-1.5">
+                            <i class="fas fa-trash text-xs"></i>
+                        </button>
+                    </form>
+                </div>
+                <?php endif ?>
+            </div>
+        </div>
+
+        <!-- Absensi bulan ini -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5" data-aos="fade-up">
+            <h4 class="font-bold text-gray-900 text-sm mb-3 flex items-center gap-2">
+                <i class="fas fa-calendar-check text-xs" style="color:var(--color-primary)"></i>
+                Kehadiran Bulan Ini
+            </h4>
+            <div class="grid grid-cols-2 gap-2">
+                <?php foreach ([
+                    ['hadir', 'Hadir', 'emerald'],
+                    ['sakit', 'Sakit', 'blue'],
+                    ['izin',  'Izin',  'yellow'],
+                    ['alpa',  'Alpa',  'red'],
+                ] as [$key, $lbl, $c]): ?>
+                <div class="bg-<?= $c ?>-50 rounded-xl p-3 text-center">
+                    <p class="text-xl font-bold text-<?= $c ?>-600"><?= $absensiStat[$key] ?? 0 ?></p>
+                    <p class="text-xs text-<?= $c ?>-500"><?= $lbl ?></p>
+                </div>
+                <?php endforeach ?>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detail & Jadwal -->
+    <div class="lg:col-span-2 space-y-4">
+
+        <!-- Data Pribadi -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden" data-aos="fade-up">
+            <div class="px-5 py-4 border-b border-gray-100">
+                <h3 class="font-bold text-gray-900 flex items-center gap-2">
+                    <i class="fas fa-id-card text-sm" style="color:var(--color-primary)"></i>
+                    Data Pribadi
+                </h3>
+            </div>
+            <div class="p-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <?php
+                $fields = [
+                    ['NIP',                 $guru['nip']               ?? '-'],
+                    ['NUPTK',               $guru['nuptk']             ?? '-'],
+                    ['Jenis Kelamin',        $guru['gender'] === 'L' ? 'Laki-laki' : 'Perempuan'],
+                    ['Agama',               $guru['religion']          ?? '-'],
+                    ['Tempat Lahir',        $guru['birth_place']       ?? '-'],
+                    ['Tanggal Lahir',       $guru['birth_date'] ? date('d F Y', strtotime($guru['birth_date'])) : '-'],
+                    ['No. HP',              $guru['phone']             ?? '-'],
+                    ['Email',               $guru['email']             ?? '-'],
+                ];
+                foreach ($fields as [$lbl, $val]):
+                ?>
+                <div>
+                    <p class="text-xs font-semibold text-gray-400 mb-0.5"><?= $lbl ?></p>
+                    <p class="text-sm font-semibold text-gray-800"><?= esc($val) ?></p>
+                </div>
+                <?php endforeach ?>
+                <div class="sm:col-span-2">
+                    <p class="text-xs font-semibold text-gray-400 mb-0.5">Alamat</p>
+                    <p class="text-sm font-semibold text-gray-800"><?= esc($guru['address'] ?? '-') ?></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Kepegawaian -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden" data-aos="fade-up">
+            <div class="px-5 py-4 border-b border-gray-100">
+                <h3 class="font-bold text-gray-900 flex items-center gap-2">
+                    <i class="fas fa-briefcase text-sm" style="color:var(--color-primary)"></i>
+                    Kepegawaian
+                </h3>
+            </div>
+            <div class="p-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <?php
+                $fields2 = [
+                    ['Status Kepegawaian', $guru['employment_status'] ?? '-'],
+                    ['Pendidikan Terakhir', ($guru['last_education'] ?? '-') . ' ' . ($guru['education_major'] ? '(' . $guru['education_major'] . ')' : '')],
+                    ['Bidang Studi',       $guru['major_name']        ?? '-'],
+                    ['Tanggal Bergabung',  $guru['joined_date'] ? date('d F Y', strtotime($guru['joined_date'])) : '-'],
+                ];
+                foreach ($fields2 as [$lbl, $val]):
+                ?>
+                <div>
+                    <p class="text-xs font-semibold text-gray-400 mb-0.5"><?= $lbl ?></p>
+                    <p class="text-sm font-semibold text-gray-800"><?= esc($val) ?></p>
+                </div>
+                <?php endforeach ?>
+            </div>
+        </div>
+
+        <!-- Jadwal Mengajar -->
+        <?php if (!empty($jadwal)): ?>
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden" data-aos="fade-up">
+            <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+                <h3 class="font-bold text-gray-900 flex items-center gap-2">
+                    <i class="fas fa-calendar-alt text-sm" style="color:var(--color-primary)"></i>
+                    Jadwal Mengajar
+                </h3>
+                <a href="<?= base_url('jadwal/guru/' . $guru['id']) ?>"
+                   class="text-xs font-semibold flex items-center gap-1" style="color:var(--color-primary)">
+                    Lihat semua <i class="fas fa-arrow-right text-xs"></i>
+                </a>
+            </div>
+            <div class="divide-y divide-gray-50">
+                <?php foreach ($jadwal as $j): ?>
+                <div class="px-5 py-3 flex items-center gap-4">
+                    <span class="text-xs font-bold px-2.5 py-1 rounded-lg text-white shrink-0"
+                          style="background:var(--color-primary);min-width:52px;text-align:center">
+                        <?= $j['day'] ?>
+                    </span>
+                    <span class="text-xs font-mono text-gray-500 shrink-0">
+                        <?= substr($j['start_time'], 0, 5) ?>–<?= substr($j['end_time'], 0, 5) ?>
+                    </span>
+                    <span class="font-semibold text-gray-800 text-sm flex-1"><?= esc($j['subject']) ?></span>
+                    <span class="text-xs text-gray-400"><?= esc($j['nama_kelas'] ?? '-') ?></span>
+                </div>
+                <?php endforeach ?>
+            </div>
+        </div>
+        <?php endif ?>
+    </div>
+</div>
 
 <?php $this->endSection() ?>

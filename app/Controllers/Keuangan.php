@@ -193,7 +193,7 @@ class Keuangan extends BaseController
             'kategori'  => $this->keuanganModel->getKategoriPemasukan(),
         ];
 
-        return view('keuangan/pemasukan/edit', $data);
+        return view('keuangan/pemasukan/add', $data);
     }
 
     // PEMASUKAN — update
@@ -364,7 +364,7 @@ class Keuangan extends BaseController
             'kategori'    => $this->keuanganModel->getKategoriPengeluaran(),
         ];
 
-        return view('keuangan/pengeluaran/edit', $data);
+        return view('keuangan/pengeluaran/add', $data);
     }
 
     // PENGELUARAN — update
@@ -607,5 +607,43 @@ class Keuangan extends BaseController
         ];
 
         return view('keuangan/cetak', $data);
+    }
+
+    // ==============================
+    // BOS STORE
+    // ==============================
+    public function bosStore()
+    {
+        $this->authCheck(true);
+
+        $this->keuanganModel->insertDanaBOS([
+            'tahun_ajaran'    => $this->request->getPost('tahun_ajaran'),
+            'semester'        => $this->request->getPost('semester'),
+            'triwulan'        => $this->request->getPost('triwulan') ?: null,
+            'jumlah_diterima' => $this->request->getPost('jumlah_diterima'),
+            'tanggal_terima'  => $this->request->getPost('tanggal_terima'),
+            'keterangan'      => $this->request->getPost('keterangan'),
+        ]);
+
+        return redirect()->to(base_url('keuangan/bos'))->with('success', 'Dana BOS berhasil ditambahkan');
+    }
+
+    // ==============================
+    // PENGAJUAN STORE
+    // ==============================
+    public function pengajuanStore()
+    {
+        $this->authCheck(true);
+
+        $this->keuanganModel->insertPengajuan([
+            'judul'               => $this->request->getPost('judul'),
+            'jumlah_diajukan'     => $this->request->getPost('jumlah_diajukan'),
+            'tanggal_pengajuan'   => $this->request->getPost('tanggal_pengajuan') ?: date('Y-m-d'),
+            'keperluan'           => $this->request->getPost('keperluan'),
+            'status'              => 'Pending',
+            'created_by'          => $this->userId(),
+        ]);
+
+        return redirect()->to(base_url('keuangan/persetujuan'))->with('success', 'Pengajuan anggaran berhasil diajukan');
     }
 }
